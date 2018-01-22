@@ -15,7 +15,7 @@ class NecroLog
 {
 	friend class Necro;
 public:
-	enum class Level {Fatal, Error, Warning, Info, Debug};
+	enum class Level {Invalid = 0, Fatal, Error, Warning, Info, Debug};
 	class LogContext
 	{
 	public:
@@ -34,7 +34,7 @@ public:
 	}
 
 	template<typename T>
-	NecroLog& operator<<(const T &v) {m_necro->maybeSpace(); m_necro->m_os << v; return *this;}
+	NecroLog& operator<<(const T &v) {*m_necro << v; return *this;}
 	NecroLog& nospace() {m_necro->setSpace(false); return *this;}
 
 	static NecroLog create(std::ostream &os, Level level, LogContext &&log_context)
@@ -167,6 +167,10 @@ private:
 		}
 
 		void setSpace(bool b) {m_isSpace = b;}
+
+		template<typename T>
+		void operator<<(const T &v) {if(m_level != NecroLog::Level::Invalid) {maybeSpace(); m_os << v;}}
+
 	private:
 		void maybeSpace()
 		{
@@ -255,7 +259,11 @@ private:
 	std::shared_ptr<Necro> m_necro;
 };
 
+#ifdef NECROLOG_NO_DEBUG_LOG
+#define nCDebug(topic) while(false) NecroLog::create(std::clog, NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
+#else
 #define nCDebug(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(std::clog, NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
+#endif
 #define nCInfo(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Info, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(std::clog, NecroLog::Level::Info, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #define nCWarning(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Warning, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(std::clog, NecroLog::Level::Warning, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #define nCError(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(std::clog, NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic))
@@ -264,3 +272,12 @@ private:
 #define nInfo() nCInfo("")
 #define nWarning() nCWarning("")
 #define nError() nCError("")
+
+#ifdef NECROLOG_NO_DEBUG_LOG
+#define nLogFuncFrame() while(0) nDebug()
+#else
+#define nLogFuncFrame() NecroLog __necrolog_func_frame_exit_logger__ = NecroLog::shouldLog(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, ""))? \
+NecroLog::create(std::clog, NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, "")) << "     EXIT FN" << __FUNCTION__: \
+NecroLog::create(std::clog, NecroLog::Level::Invalid, NecroLog::LogContext(__FILE__, __LINE__, "")); \
+shvDebug() << ">>>> ENTER FN" << __FUNCTION__
+#endif
