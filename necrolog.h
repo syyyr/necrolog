@@ -117,6 +117,30 @@ public:
 		ret.insert(ret.begin(), argv[0]);
 		return ret;
 	}
+
+	static std::string tresholdsLogInfo()
+	{
+		std::string ret;
+		for (auto& kv : globalOptions().tresholds) {
+			if(!ret.empty())
+				ret += ',';
+			ret += kv.first + ':';
+			switch(kv.second) {
+			case Level::Debug: ret += 'D'; break;
+			case Level::Info: ret += 'I'; break;
+			case Level::Warning: ret += 'W'; break;
+			case Level::Error: ret += 'E'; break;
+			case Level::Fatal: ret += 'F'; break;
+			case Level::Invalid: ret += 'N'; break;
+			default: ret += '?'; break;
+			}
+		}
+		//if(!ret.empty())
+		//	ret += ',';
+		//ret = ret + ':' + levelToString(s_globalLogFilter.defaultModulesLogTreshold)[0];
+		return ret;
+	}
+
 	static const char *cliHelp()
 	{
 		return
