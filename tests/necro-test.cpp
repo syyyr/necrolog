@@ -1,6 +1,3 @@
-#include "foo.h"
-#include "bar.h"
-
 #include <necrolog.h>
 
 #include <numeric>
@@ -27,9 +24,6 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	nInfo() << NecroLog::tresholdsLogInfo();
-	nInfo() << NecroLog::instantiationInfo();
-	Foo foo;
-	Bar bar;
 
 	nDebug() << "Debug mesage";
 	nInfo() << "Info mesage";

@@ -1,13 +1,14 @@
 # NecroLog
-One header tiniest logging for C++
+Tiny logging library for C++
 
 compile test
 ```sh
-g++ necro-test.cpp -o necro-test -std=c++11
+cd tests
+g++ necro-test.cpp ../libnecrolog/necrolog.cpp -I../include -o necro-test -std=c++11
 ```
 run test
 ```sh
-[~/proj/necrolog]$ ./necro-test --help                                                                                                                                                                           *[master] 
+[~/proj/necrolog/tests]$ ./necro-test --help                                                                                                                                                                           *[master]
 -lfn, --log-long-file-names
         Log long file names
 -d, -v, --verbose [<pattern>]:[D|I|W|E]
