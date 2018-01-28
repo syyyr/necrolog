@@ -43,7 +43,7 @@ public:
 	}
 	static bool shouldLog(Level level, const LogContext &context)
 	{
-		const std::map<std::string, Level> &tresholds = globalOptions().tresholds;
+		const std::map<std::string, Level> &tresholds = NecroLog().globalOptions().tresholds;
 		if(tresholds.empty())
 			return (level <= Level::Info); // default log level
 
@@ -52,6 +52,7 @@ public:
 			for(const auto &pair : tresholds) {
 				const std::string &g_topic = pair.first;
 				size_t i;
+				//printf("%s vs %s\n", ctx_topic, g_topic.data());
 				for (i = 0; i < g_topic.size() && ctx_topic[i+j]; ++i) {
 					if(tolower(ctx_topic[i+j]) != g_topic[i])
 						break;
@@ -66,11 +67,12 @@ public:
 	{
 		using namespace std;
 		std::vector<string> ret;
+		Options& options = NecroLog().globalOptions();
 		for(int i=1; i<argc; i++) {
 			string s = argv[i];
 			if(s == "-lfn" || s == "--log-long-file-names") {
 				i++;
-				globalOptions().logLongFileNames = true;
+				options.logLongFileNames = true;
 			}
 			else if(s == "-d" || s == "-v" || s == "--verbose") {
 				i++;
@@ -102,7 +104,7 @@ public:
 								}
 							}
 							std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
-							globalOptions().tresholds[topic] = level;
+							options.tresholds[topic] = level;
 						}
 						if(pos2 == string::npos)
 							break;
@@ -121,7 +123,7 @@ public:
 	static std::string tresholdsLogInfo()
 	{
 		std::string ret;
-		for (auto& kv : globalOptions().tresholds) {
+		for (auto& kv : NecroLog().globalOptions().tresholds) {
 			if(!ret.empty())
 				ret += ',';
 			ret += kv.first + ':';
@@ -136,7 +138,7 @@ public:
 			}
 		}
 		//if(!ret.empty())
-		//	ret += ',';
+		//ret += " --- cnt: " + std::to_string(++NecroLog().globalOptions().cnt);
 		//ret = ret + ':' + levelToString(s_globalLogFilter.defaultModulesLogTreshold)[0];
 		return ret;
 	}
@@ -160,12 +162,22 @@ public:
 			;
 	}
 private:
+	NecroLog() { }
+
 	struct Options
 	{
 		std::map<std::string, Level> tresholds;
 		bool logLongFileNames = false;
+		//int cnt = 0;
 	};
-	static inline Options& globalOptions()
+	/*
+	according to http://en.cppreference.com/w/cpp/language/inline
+
+	An inline function or variable (since C++17) with external linkage (e.g. not declared static) has the following additional properties:
+		1) It must be declared inline in every translation unit.
+		2) It has the same address in every translation unit.
+	*/
+	inline Options& globalOptions()
 	{
 		static Options global_options;
 		return global_options;
@@ -211,7 +223,7 @@ private:
 
 		std::string moduleFromFileName(const char *file_name)
 		{
-			if(NecroLog::globalOptions().logLongFileNames)
+			if(NecroLog().globalOptions().logLongFileNames)
 				return std::string(file_name);
 
 			std::string ret(file_name);

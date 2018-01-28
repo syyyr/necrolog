@@ -1,4 +1,7 @@
-#include "necrolog.h"
+#include "foo.h"
+#include "bar.h"
+
+#include <necrolog.h>
 
 #include <numeric>
 #include <vector>
@@ -23,6 +26,10 @@ int main(int argc, char *argv[])
 		std::cout << NecroLog::cliHelp();
 		exit(0);
 	}
+	nInfo() << NecroLog::tresholdsLogInfo();
+	nInfo() << (void*)NecroLog::cliHelp();
+	Foo foo;
+	Bar bar;
 
 	nDebug() << "Debug mesage";
 	nInfo() << "Info mesage";
