@@ -23,10 +23,6 @@ LIBS += \
 
 SOURCES += \
 	necro-test.cpp \
-    foo.cpp \
-    bar.cpp
 
 HEADERS += \
-    foo.h \
-    bar.h
 
