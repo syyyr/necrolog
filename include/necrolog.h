@@ -43,7 +43,7 @@ public:
 	}
 	static bool shouldLog(Level level, const LogContext &context)
 	{
-		const std::map<std::string, Level> &tresholds = NecroLog().globalOptions().tresholds;
+		const std::map<std::string, Level> &tresholds = NecroLog::globalOptions().tresholds;
 		if(tresholds.empty())
 			return (level <= Level::Info); // default log level
 
@@ -67,7 +67,7 @@ public:
 	{
 		using namespace std;
 		std::vector<string> ret;
-		Options& options = NecroLog().globalOptions();
+		Options& options = NecroLog::globalOptions();
 		for(int i=1; i<argc; i++) {
 			string s = argv[i];
 			if(s == "-lfn" || s == "--log-long-file-names") {
@@ -123,7 +123,7 @@ public:
 	static std::string tresholdsLogInfo()
 	{
 		std::string ret;
-		for (auto& kv : NecroLog().globalOptions().tresholds) {
+		for (auto& kv : NecroLog::globalOptions().tresholds) {
 			if(!ret.empty())
 				ret += ',';
 			ret += kv.first + ':';
@@ -138,7 +138,7 @@ public:
 			}
 		}
 		//if(!ret.empty())
-		//ret += " --- cnt: " + std::to_string(++NecroLog().globalOptions().cnt);
+		ret += " --- cnt: " + std::to_string(++NecroLog::globalOptions().cnt);
 		//ret = ret + ':' + levelToString(s_globalLogFilter.defaultModulesLogTreshold)[0];
 		return ret;
 	}
@@ -162,13 +162,13 @@ public:
 			;
 	}
 private:
-	NecroLog() { }
+	//NecroLog() { }
 
 	struct Options
 	{
 		std::map<std::string, Level> tresholds;
 		bool logLongFileNames = false;
-		//int cnt = 0;
+		int cnt = 0;
 	};
 	/*
 	according to http://en.cppreference.com/w/cpp/language/inline
@@ -177,7 +177,7 @@ private:
 		1) It must be declared inline in every translation unit.
 		2) It has the same address in every translation unit.
 	*/
-	inline Options& globalOptions()
+	static Options& globalOptions()
 	{
 		static Options global_options;
 		return global_options;
@@ -223,7 +223,7 @@ private:
 
 		std::string moduleFromFileName(const char *file_name)
 		{
-			if(NecroLog().globalOptions().logLongFileNames)
+			if(NecroLog::globalOptions().logLongFileNames)
 				return std::string(file_name);
 
 			std::string ret(file_name);
