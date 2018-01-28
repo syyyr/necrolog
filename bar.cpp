@@ -8,5 +8,5 @@ Bar::Bar()
 {
 	nBarDebug() << __FUNCTION__;
 	nInfo() << NecroLog::tresholdsLogInfo();
-	nInfo() << (void*)NecroLog::cliHelp();
+	nInfo() << NecroLog::instantiationInfo();
 }

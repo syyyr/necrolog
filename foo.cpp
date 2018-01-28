@@ -8,5 +8,5 @@ Foo::Foo()
 {
 	nFooInfo() << __FUNCTION__;
 	nInfo() << NecroLog::tresholdsLogInfo();
-	nInfo() << (void*)NecroLog::cliHelp();
+	nInfo() << NecroLog::instantiationInfo();
 }

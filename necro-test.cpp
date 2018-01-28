@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	nInfo() << NecroLog::tresholdsLogInfo();
-	nInfo() << (void*)NecroLog::cliHelp();
+	nInfo() << NecroLog::instantiationInfo();
 	Foo foo;
 	Bar bar;
 

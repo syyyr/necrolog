@@ -6,6 +6,7 @@
 #include <iostream>
 #include <ctime>
 #include <algorithm>
+#include <sstream>
 
 #ifdef __unix
 #include <unistd.h>
@@ -138,9 +139,18 @@ public:
 			}
 		}
 		//if(!ret.empty())
-		ret += " --- cnt: " + std::to_string(++NecroLog::globalOptions().cnt);
+		//ret += " --- cnt: " + std::to_string(++NecroLog::globalOptions().cnt);
 		//ret = ret + ':' + levelToString(s_globalLogFilter.defaultModulesLogTreshold)[0];
 		return ret;
+	}
+
+	static std::string instantiationInfo()
+	{
+		std::ostringstream ss;
+		ss << "Instantiation info: ";
+		ss << "globalOptions address: " << (void*)&(NecroLog::globalOptions());
+		ss << ", cliHelp literal address: " << (void*)NecroLog::cliHelp();
+		return ss.str();
 	}
 
 	static const char *cliHelp()
@@ -168,7 +178,7 @@ private:
 	{
 		std::map<std::string, Level> tresholds;
 		bool logLongFileNames = false;
-		int cnt = 0;
+		//int cnt = 0;
 	};
 	/*
 	according to http://en.cppreference.com/w/cpp/language/inline
