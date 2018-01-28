@@ -12,7 +12,8 @@
 #include <unistd.h>
 #endif
 
-class NecroLog
+template <typename N>
+class NecroLog1
 {
 	friend class Necro;
 public:
@@ -29,28 +30,22 @@ public:
 		const char *topic;
 	};
 public:
-	NecroLog(std::ostream &os, Level level, LogContext &&log_context)
+	NecroLog1(std::ostream &os, Level level, LogContext &&log_context)
 	{
 		m_necro = std::make_shared<Necro>(os, level, std::move(log_context));
 	}
 
 	template<typename T>
-	NecroLog& operator<<(const T &v) {*m_necro << v; return *this;}
-	NecroLog& nospace() {m_necro->setSpace(false); return *this;}
+	NecroLog1& operator<<(const T &v) {*m_necro << v; return *this;}
+	NecroLog1& nospace() {m_necro->setSpace(false); return *this;}
 
-public:
-	static NecroLog create(std::ostream &os, Level level, LogContext &&log_context) {return NecroLog().create_in(os, level, std::move(log_context));}
-private:
-	NecroLog create_in(std::ostream &os, Level level, LogContext &&log_context)
+	static NecroLog1 create(std::ostream &os, Level level, LogContext &&log_context)
 	{
-		return NecroLog(os, level, std::move(log_context));
+		return NecroLog1(os, level, std::move(log_context));
 	}
-public:
-	static bool shouldLog(Level level, const LogContext &context) {return NecroLog().shouldLog_in(level, context);}
-private:
-	bool shouldLog_in(Level level, const LogContext &context)
+	static bool shouldLog(Level level, const LogContext &context)
 	{
-		const std::map<std::string, Level> &tresholds = this->globalOptions().tresholds;
+		const std::map<std::string, Level> &tresholds = NecroLog1::globalOptions().tresholds;
 		if(tresholds.empty())
 			return (level <= Level::Info); // default log level
 
@@ -71,14 +66,11 @@ private:
 		return false;
 	}
 
-public:
-	static std::vector<std::string> setCLIOptions(int argc, char *argv[]) {return NecroLog().setCLIOptions_in(argc, argv);}
-private:
-	std::vector<std::string> setCLIOptions_in(int argc, char *argv[])
+	static std::vector<std::string> setCLIOptions(int argc, char *argv[])
 	{
 		using namespace std;
 		std::vector<string> ret;
-		Options& options = this->globalOptions();
+		Options& options = NecroLog1::globalOptions();
 		for(int i=1; i<argc; i++) {
 			string s = argv[i];
 			if(s == "-lfn" || s == "--log-long-file-names") {
@@ -131,13 +123,10 @@ private:
 		return ret;
 	}
 
-public:
-	static std::string tresholdsLogInfo() {return NecroLog().tresholdsLogInfo_in();}
-private:
-	std::string tresholdsLogInfo_in()
+	static std::string tresholdsLogInfo()
 	{
 		std::string ret;
-		for (auto& kv : this->globalOptions().tresholds) {
+		for (auto& kv : NecroLog1::globalOptions().tresholds) {
 			if(!ret.empty())
 				ret += ',';
 			ret += kv.first + ':';
@@ -151,70 +140,34 @@ private:
 			default: ret += '?'; break;
 			}
 		}
-		//if(!ret.empty())
-		//ret += " --- cnt: " + std::to_string(++this->globalOptions().cnt);
-		//ret = ret + ':' + levelToString(s_globalLogFilter.defaultModulesLogTreshold)[0];
 		return ret;
 	}
 
-public:
-	static std::string instantiationInfo() {return NecroLog().instantiationInfo_in();}
-private:
-	std::string instantiationInfo_in()
+	static std::string instantiationInfo()
 	{
 		std::ostringstream ss;
 		ss << "Instantiation info: ";
-		ss << "globalOptions address: " << (void*)&(this->globalOptions());
-		ss << ", cliHelp literal address: " << (void*)this->cliHelp();
+		ss << "globalOptions address: " << (void*)&(NecroLog1::globalOptions().logLongFileNames);
+		ss << ", cliHelp literal address: " << (void*)NecroLog1::cliHelp();
+		ss << ", cnt: " << ++NecroLog1::globalOptions().cnt;
 		return ss.str();
 	}
-public:
-	static const char *cliHelp() {return NecroLog().cliHelp_in();}
+
+	static const char *cliHelp();
 private:
-	const char *cliHelp_in()
-	{
-		static const char * ret =
-			"-lfn, --log-long-file-names\n"
-			"\tLog long file names\n"
-			"-d, -v, --verbose [<pattern>]:[D|I|W|E]\n"
-			"\tSet files or topics log treshold\n"
-			"\tset treshold for all files or topics containing pattern to treshold D|I|W|E\n"
-			"\twhen pattern is not set, set treshold for any filename or topic\n"
-			"\twhen treshold is not set, set treshold D (Debug) for all files or topics containing pattern\n"
-			"\twhen nothing is not set, set treshold D (Debug) for all files or topics\n"
-			"\tExamples:\n"
-			"\t\t-d\t\tset treshold D (Debug) for all files or topics\n"
-			"\t\t-d :W\t\tset treshold W (Warning) for all files or topics\n"
-			"\t\t-d foo,bar\t\tset treshold D for all files or topics containing 'foo' or 'bar'\n"
-			"\t\t-d bar:W\tset treshold W (Warning) for all files or topics containing 'bar'\n"
-			;
-		return ret;
-	}
-private:
-	NecroLog() { }
 	struct Options
 	{
 		std::map<std::string, Level> tresholds;
 		bool logLongFileNames = false;
-		//int cnt = 0;
+		int cnt = 0;
 	};
-	/*
-	according to http://en.cppreference.com/w/cpp/language/inline
 
-	An inline function or variable (since C++17) with external linkage (e.g. not declared static) has the following additional properties:
-		1) It must be declared inline in every translation unit.
-		2) It has the same address in every translation unit.
-	*/
-	Options& globalOptions()
-	{
-		static Options global_options;
-		return global_options;
-	}
+	static Options& globalOptions();
 private:
 	class Necro {
-		friend class NecroLog;
+		friend class NecroLog1;
 	public:
-		Necro(std::ostream &os, NecroLog::Level level, LogContext &&log_context)
+		Necro(std::ostream &os, NecroLog1::Level level, LogContext &&log_context)
 			: m_os(os)
 			, m_level(level)
 			, m_logContext(std::move(log_context))
@@ -233,7 +186,7 @@ private:
 		void setSpace(bool b) {m_isSpace = b;}
 
 		template<typename T>
-		void operator<<(const T &v) {if(m_level != NecroLog::Level::Invalid) {maybeSpace(); m_os << v;}}
+		void operator<<(const T &v) {if(m_level != NecroLog1::Level::Invalid) {maybeSpace(); m_os << v;}}
 
 	private:
 		void maybeSpace()
@@ -251,7 +204,7 @@ private:
 
 		std::string moduleFromFileName(const char *file_name)
 		{
-			if(NecroLog{}.globalOptions().logLongFileNames)
+			if(NecroLog1::globalOptions().logLongFileNames)
 				return std::string(file_name);
 
 			std::string ret(file_name);
@@ -285,19 +238,19 @@ private:
 				setTtyColor(TTYColor::White, true) << '(' << m_logContext.topic << ")";
 			}
 			switch(m_level) {
-			case NecroLog::Level::Fatal:
+			case NecroLog1::Level::Fatal:
 				setTtyColor(TTYColor::Red, true) << "|F|";
 				break;
-			case NecroLog::Level::Error:
+			case NecroLog1::Level::Error:
 				setTtyColor(TTYColor::Red, true) << "|E|";
 				break;
-			case NecroLog::Level::Warning:
+			case NecroLog1::Level::Warning:
 				setTtyColor(TTYColor::Magenta, true) << "|W|";
 				break;
-			case NecroLog::Level::Info:
+			case NecroLog1::Level::Info:
 				setTtyColor(TTYColor::Cyan, true) << "|I|";
 				break;
-			case NecroLog::Level::Debug:
+			case NecroLog1::Level::Debug:
 				setTtyColor(TTYColor::White, false) << "|D|";
 				break;
 			default:
@@ -313,7 +266,7 @@ private:
 		}
 	private:
 		std::ostream &m_os;
-		NecroLog::Level m_level;
+		NecroLog1::Level m_level;
 		LogContext m_logContext;
 		bool m_isSpace = true;
 		bool m_firstRun = true;
@@ -322,6 +275,36 @@ private:
 private:
 	std::shared_ptr<Necro> m_necro;
 };
+
+template <typename N>
+typename NecroLog1<N>::Options& NecroLog1<N>::globalOptions()
+{
+	static Options global_options;
+	return global_options;
+}
+
+template <typename N>
+const char *NecroLog1<N>::cliHelp()
+{
+	static const char * ret =
+		"-lfn, --log-long-file-names\n"
+		"\tLog long file names\n"
+		"-d, -v, --verbose [<pattern>]:[D|I|W|E]\n"
+		"\tSet files or topics log treshold\n"
+		"\tset treshold for all files or topics containing pattern to treshold D|I|W|E\n"
+		"\twhen pattern is not set, set treshold for any filename or topic\n"
+		"\twhen treshold is not set, set treshold D (Debug) for all files or topics containing pattern\n"
+		"\twhen nothing is not set, set treshold D (Debug) for all files or topics\n"
+		"\tExamples:\n"
+		"\t\t-d\t\tset treshold D (Debug) for all files or topics\n"
+		"\t\t-d :W\t\tset treshold W (Warning) for all files or topics\n"
+		"\t\t-d foo,bar\t\tset treshold D for all files or topics containing 'foo' or 'bar'\n"
+		"\t\t-d bar:W\tset treshold W (Warning) for all files or topics containing 'bar'\n"
+		;
+	return ret;
+}
+
+using NecroLog = NecroLog1<void>;
 
 #ifdef NECROLOG_NO_DEBUG_LOG
 #define nCDebug(topic) while(false) NecroLog::create(std::clog, NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
