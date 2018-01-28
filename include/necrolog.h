@@ -38,13 +38,19 @@ public:
 	NecroLog& operator<<(const T &v) {*m_necro << v; return *this;}
 	NecroLog& nospace() {m_necro->setSpace(false); return *this;}
 
-	static NecroLog create(std::ostream &os, Level level, LogContext &&log_context)
+public:
+	static NecroLog create(std::ostream &os, Level level, LogContext &&log_context) {return NecroLog().create_in(os, level, std::move(log_context));}
+private:
+	NecroLog create_in(std::ostream &os, Level level, LogContext &&log_context)
 	{
 		return NecroLog(os, level, std::move(log_context));
 	}
-	static bool shouldLog(Level level, const LogContext &context)
+public:
+	static bool shouldLog(Level level, const LogContext &context) {return NecroLog().shouldLog_in(level, context);}
+private:
+	bool shouldLog_in(Level level, const LogContext &context)
 	{
-		const std::map<std::string, Level> &tresholds = NecroLog::globalOptions().tresholds;
+		const std::map<std::string, Level> &tresholds = this->globalOptions().tresholds;
 		if(tresholds.empty())
 			return (level <= Level::Info); // default log level
 
@@ -64,11 +70,15 @@ public:
 		}
 		return false;
 	}
-	static std::vector<std::string> setCLIOptions(int argc, char *argv[])
+
+public:
+	static std::vector<std::string> setCLIOptions(int argc, char *argv[]) {return NecroLog().setCLIOptions_in(argc, argv);}
+private:
+	std::vector<std::string> setCLIOptions_in(int argc, char *argv[])
 	{
 		using namespace std;
 		std::vector<string> ret;
-		Options& options = NecroLog::globalOptions();
+		Options& options = this->globalOptions();
 		for(int i=1; i<argc; i++) {
 			string s = argv[i];
 			if(s == "-lfn" || s == "--log-long-file-names") {
@@ -121,10 +131,13 @@ public:
 		return ret;
 	}
 
-	static std::string tresholdsLogInfo()
+public:
+	static std::string tresholdsLogInfo() {return NecroLog().tresholdsLogInfo_in();}
+private:
+	std::string tresholdsLogInfo_in()
 	{
 		std::string ret;
-		for (auto& kv : NecroLog::globalOptions().tresholds) {
+		for (auto& kv : this->globalOptions().tresholds) {
 			if(!ret.empty())
 				ret += ',';
 			ret += kv.first + ':';
@@ -139,23 +152,28 @@ public:
 			}
 		}
 		//if(!ret.empty())
-		//ret += " --- cnt: " + std::to_string(++NecroLog::globalOptions().cnt);
+		//ret += " --- cnt: " + std::to_string(++this->globalOptions().cnt);
 		//ret = ret + ':' + levelToString(s_globalLogFilter.defaultModulesLogTreshold)[0];
 		return ret;
 	}
 
-	static std::string instantiationInfo()
+public:
+	static std::string instantiationInfo() {return NecroLog().instantiationInfo_in();}
+private:
+	std::string instantiationInfo_in()
 	{
 		std::ostringstream ss;
 		ss << "Instantiation info: ";
-		ss << "globalOptions address: " << (void*)&(NecroLog::globalOptions());
-		ss << ", cliHelp literal address: " << (void*)NecroLog::cliHelp();
+		ss << "globalOptions address: " << (void*)&(this->globalOptions());
+		ss << ", cliHelp literal address: " << (void*)this->cliHelp();
 		return ss.str();
 	}
-
-	static const char *cliHelp()
+public:
+	static const char *cliHelp() {return NecroLog().cliHelp_in();}
+private:
+	const char *cliHelp_in()
 	{
-		return
+		static const char * ret =
 			"-lfn, --log-long-file-names\n"
 			"\tLog long file names\n"
 			"-d, -v, --verbose [<pattern>]:[D|I|W|E]\n"
@@ -170,10 +188,10 @@ public:
 			"\t\t-d foo,bar\t\tset treshold D for all files or topics containing 'foo' or 'bar'\n"
 			"\t\t-d bar:W\tset treshold W (Warning) for all files or topics containing 'bar'\n"
 			;
+		return ret;
 	}
 private:
-	//NecroLog() { }
-
+	NecroLog() { }
 	struct Options
 	{
 		std::map<std::string, Level> tresholds;
@@ -187,7 +205,7 @@ private:
 		1) It must be declared inline in every translation unit.
 		2) It has the same address in every translation unit.
 	*/
-	static Options& globalOptions()
+	Options& globalOptions()
 	{
 		static Options global_options;
 		return global_options;
@@ -233,7 +251,7 @@ private:
 
 		std::string moduleFromFileName(const char *file_name)
 		{
-			if(NecroLog::globalOptions().logLongFileNames)
+			if(NecroLog{}.globalOptions().logLongFileNames)
 				return std::string(file_name);
 
 			std::string ret(file_name);
