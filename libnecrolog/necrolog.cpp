@@ -1,5 +1,13 @@
 #include "necrolog.h"
 
+#include <ctime>
+#include <algorithm>
+#include <sstream>
+
+#ifdef __unix
+#include <unistd.h>
+#endif
+
 NecroLog::Options &NecroLog::globalOptions()
 {
 	static Options global_options;
@@ -13,9 +21,10 @@ NecroLog NecroLog::create(std::ostream &os, Level level, LogContext &&log_contex
 
 bool NecroLog::shouldLog(Level level, const LogContext &context)
 {
-	const std::map<std::string, Level> &tresholds = NecroLog::globalOptions().tresholds;
-	if(tresholds.empty())
-		return (level <= Level::Info); // default log level
+	Options &opts = NecroLog::globalOptions();
+	const std::map<std::string, Level> &tresholds = opts.tresholds;
+	if(level <= opts.defaultLogLevel)
+		return true; // default log level
 
 	const char *ctx_topic = (context.topic && context.topic[0])? context.topic: context.file;
 	for (size_t j = 0; ctx_topic[j]; ++j) {
@@ -58,7 +67,7 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 				while(true) {
 					size_t pos2 = tresholds.find_first_of(',', pos);
 					string topic_level = (pos2 == string::npos)? tresholds.substr(pos): tresholds.substr(pos, pos2 - pos);
-					if(!s.empty()) {
+					if(!topic_level.empty()) {
 						auto ix = topic_level.find(':');
 						Level level = Level::Debug;
 						std::string topic = topic_level;
@@ -75,7 +84,10 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 							}
 						}
 						std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
-						options.tresholds[topic] = level;
+						if(topic.empty())
+							options.defaultLogLevel = level;
+						else
+							options.tresholds[topic] = level;
 					}
 					if(pos2 == string::npos)
 						break;
@@ -110,7 +122,7 @@ std::string NecroLog::tresholdsLogInfo()
 	}
 	return ret;
 }
-
+/*
 std::string NecroLog::instantiationInfo()
 {
 	std::ostringstream ss;
@@ -120,8 +132,7 @@ std::string NecroLog::instantiationInfo()
 	ss << ", cnt: " << ++NecroLog::globalOptions().cnt;
 	return ss.str();
 }
-
-
+*/
 const char * NecroLog::cliHelp()
 {
 	static const char * ret =
@@ -140,4 +151,97 @@ const char * NecroLog::cliHelp()
 		"\t\t-d bar:W\tset treshold W (Warning) for all files or topics containing 'bar'\n"
 		;
 	return ret;
+}
+
+NecroLog::Necro::Necro(std::ostream &os, NecroLog::Level level, NecroLog::LogContext &&log_context)
+	: m_os(os)
+	, m_level(level)
+	, m_logContext(std::move(log_context))
+{
+#ifdef __unix
+	m_isTTI = true;//(&m_os == &std::clog) && ::isatty(STDERR_FILENO);
+#endif
+}
+
+NecroLog::Necro::~Necro()
+{
+	epilog();
+	m_os << std::endl;
+	m_os.flush();
+}
+
+void NecroLog::Necro::maybeSpace()
+{
+	if(m_firstRun) {
+		m_firstRun = false;
+		prolog();
+	}
+	else {
+		if(m_isSpace) {
+			m_os << ' ';
+		}
+	}
+}
+
+std::string NecroLog::Necro::moduleFromFileName(const char *file_name)
+{
+	if(NecroLog::globalOptions().logLongFileNames)
+		return std::string(file_name);
+
+	std::string ret(file_name);
+	auto ix = ret.find_last_of('/');
+#ifndef __unix
+	if(ix == std::string::npos)
+		ix = ret.find_last_of('\\');
+#endif
+	if(ix != std::string::npos)
+		ret = ret.substr(ix + 1);
+	return ret;
+}
+
+std::ostream &NecroLog::Necro::setTtyColor(NecroLog::Necro::TTYColor color, bool bright, bool bg_color)
+{
+	if(m_isTTI)
+		m_os << "\033[" << (bright? '1': '0') << ';' << (bg_color? '4': '3') << char('0' + color) << 'm';
+	return m_os;
+}
+
+void NecroLog::Necro::prolog()
+{
+	std::time_t t = std::time(nullptr);
+	std::tm *tm = std::gmtime(&t); /// gmtime is not thread safe!!!
+	char buffer[80] = {0};
+	std::strftime(buffer, sizeof(buffer),"%Y-%m-%dT%H:%M:%S", tm);
+	setTtyColor(TTYColor::Green, false) << std::string(buffer);
+	setTtyColor(TTYColor::Yellow, false) << '[' << moduleFromFileName(m_logContext.file) << ':' << m_logContext.line << "]";
+	if(m_logContext.topic && m_logContext.topic[0]) {
+		setTtyColor(TTYColor::White, true) << '(' << m_logContext.topic << ")";
+	}
+	switch(m_level) {
+	case NecroLog::Level::Fatal:
+		setTtyColor(TTYColor::Red, true) << "|F|";
+		break;
+	case NecroLog::Level::Error:
+		setTtyColor(TTYColor::Red, true) << "|E|";
+		break;
+	case NecroLog::Level::Warning:
+		setTtyColor(TTYColor::Magenta, true) << "|W|";
+		break;
+	case NecroLog::Level::Info:
+		setTtyColor(TTYColor::Cyan, true) << "|I|";
+		break;
+	case NecroLog::Level::Debug:
+		setTtyColor(TTYColor::White, false) << "|D|";
+		break;
+	default:
+		setTtyColor(TTYColor::Red, true) << "|?|";
+		break;
+	};
+	m_os << " ";
+}
+
+void NecroLog::Necro::epilog()
+{
+	if(m_isTTI)
+		m_os << "\33[0m";
 }

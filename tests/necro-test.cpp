@@ -2,6 +2,8 @@
 
 #include <numeric>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 #define nFooInfo() nCInfo("foo")
 #define nBarDebug() nCDebug("bar")
