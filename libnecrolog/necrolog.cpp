@@ -22,21 +22,35 @@ NecroLog NecroLog::create(std::ostream &os, Level level, LogContext &&log_contex
 bool NecroLog::shouldLog(Level level, const LogContext &context)
 {
 	Options &opts = NecroLog::globalOptions();
-	const std::map<std::string, Level> &tresholds = opts.tresholds;
-	if(level <= opts.defaultLogLevel)
-		return true; // default log level
 
-	const char *ctx_topic = (context.topic && context.topic[0])? context.topic: context.file;
-	for (size_t j = 0; ctx_topic[j]; ++j) {
-		for(const auto &pair : tresholds) {
-			const std::string &g_topic = pair.first;
+	const bool topic_set = (context.topic && context.topic[0]);
+	if(!topic_set && opts.fileTresholds.empty())
+		return level <= Level::Info; // when tresholds are not set, log non-topic INFO messages
+
+	const char *searched_str = "";
+	if(topic_set) {
+		searched_str = (context.topic && context.topic[0])? context.topic: "";
+	}
+	else {
+		searched_str = (context.file && context.file[0])? context.file: "";
+		if(!opts.logLongFileNames) {
+			int ix = moduleNameStart(searched_str);
+			if(ix >= 0)
+				searched_str += ix;
+		}
+	}
+
+	const std::map<std::string, Level> &tresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
+	for(const auto &pair : tresholds) {
+		const std::string &needle = pair.first;
+		for (size_t j = 0; searched_str[j]; ++j) {
 			size_t i;
 			//printf("%s vs %s\n", ctx_topic, g_topic.data());
-			for (i = 0; i < g_topic.size() && ctx_topic[i+j]; ++i) {
-				if(tolower(ctx_topic[i+j]) != g_topic[i])
+			for (i = 0; i < needle.size()  && searched_str[i+j]; ++i) {
+				if(tolower(searched_str[i+j]) != needle[i])
 					break;
 			}
-			if(i == g_topic.size())
+			if(i == needle.size())
 				return (level <= pair.second);
 		}
 	}
@@ -55,9 +69,10 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 			options.logLongFileNames = true;
 		}
 		else if(s == "-d" || s == "-v" || s == "--verbose") {
+			bool use_topics = (s != "-d");
 			i++;
 			string tresholds = (i < argc)? argv[i]: string();
-			if(!tresholds.empty() && tresholds[0] == '-') {
+			if(tresholds.empty() || (!tresholds.empty() && tresholds[0] == '-')) {
 				i--;
 				tresholds = ":D";
 			}
@@ -84,10 +99,10 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 							}
 						}
 						std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
-						if(topic.empty())
-							options.defaultLogLevel = level;
+						if(use_topics)
+							options.topicTresholds[topic] = level;
 						else
-							options.tresholds[topic] = level;
+							options.fileTresholds[topic] = level;
 					}
 					if(pos2 == string::npos)
 						break;
@@ -106,7 +121,7 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 std::string NecroLog::tresholdsLogInfo()
 {
 	std::string ret;
-	for (auto& kv : NecroLog::globalOptions().tresholds) {
+	for (auto& kv : NecroLog::globalOptions().topicTresholds) {
 		if(!ret.empty())
 			ret += ',';
 		ret += kv.first + ':';
@@ -122,24 +137,15 @@ std::string NecroLog::tresholdsLogInfo()
 	}
 	return ret;
 }
-/*
-std::string NecroLog::instantiationInfo()
-{
-	std::ostringstream ss;
-	ss << "Instantiation info: ";
-	ss << "globalOptions address: " << (void*)&(NecroLog::globalOptions().logLongFileNames);
-	ss << ", cliHelp literal address: " << (void*)NecroLog::cliHelp();
-	ss << ", cnt: " << ++NecroLog::globalOptions().cnt;
-	return ss.str();
-}
-*/
+
 const char * NecroLog::cliHelp()
 {
 	static const char * ret =
 		"-lfn, --log-long-file-names\n"
 		"\tLog long file names\n"
-		"-d, -v, --verbose [<pattern>]:[D|I|W|E]\n"
-		"\tSet files or topics log treshold\n"
+		"-d [<pattern>]:[D|I|W|E] set file name log treshold\n"
+		"-v, --topic [<pattern>]:[D|I|W|E] set topic log treshold\n"
+		"\tSet log treshold\n"
 		"\tset treshold for all files or topics containing pattern to treshold D|I|W|E\n"
 		"\twhen pattern is not set, set treshold for any filename or topic\n"
 		"\twhen treshold is not set, set treshold D (Debug) for all files or topics containing pattern\n"
@@ -183,20 +189,31 @@ void NecroLog::Necro::maybeSpace()
 	}
 }
 
-std::string NecroLog::Necro::moduleFromFileName(const char *file_name)
+int NecroLog::moduleNameStart(const char *file_name)
+{
+	char sep = '/';
+#ifndef __unix
+	//sep = '\\'; mingw use '/' even on windows
+#endif
+	int ret = -1;
+	if(file_name) {
+		for (int ix = 0; file_name[ix]; ++ix) {
+			if(file_name[ix] == sep)
+				ret = ix;
+		}
+	}
+	return ret;
+}
+
+std::string NecroLog::moduleFromFileName(const char *file_name)
 {
 	if(NecroLog::globalOptions().logLongFileNames)
 		return std::string(file_name);
 
-	std::string ret(file_name);
-	auto ix = ret.find_last_of('/');
-#ifndef __unix
-	if(ix == std::string::npos)
-		ix = ret.find_last_of('\\');
-#endif
-	if(ix != std::string::npos)
-		ret = ret.substr(ix + 1);
-	return ret;
+	int ix = moduleNameStart(file_name);
+	if(ix < 0)
+		return std::string(file_name);
+	return std::string(file_name + ix);
 }
 
 std::ostream &NecroLog::Necro::setTtyColor(NecroLog::Necro::TTYColor color, bool bright, bool bg_color)

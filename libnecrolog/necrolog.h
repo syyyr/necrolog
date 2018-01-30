@@ -38,17 +38,18 @@ public:
 	static bool shouldLog(Level level, const LogContext &context);
 	static std::vector<std::string> setCLIOptions(int argc, char *argv[]);
 	static std::string tresholdsLogInfo();
-	//static std::string instantiationInfo();
 	static const char * cliHelp();
 private:
 	struct Options
 	{
-		std::map<std::string, Level> tresholds;
-		Level defaultLogLevel = Level::Info;
+		std::map<std::string, Level> fileTresholds;
+		std::map<std::string, Level> topicTresholds;
 		bool logLongFileNames = false;
 	};
 
 	static Options& globalOptions();
+	static int moduleNameStart(const char *file_name);
+	static std::string moduleFromFileName(const char *file_name);
 private:
 	class Necro {
 		friend class NecroLog;
@@ -63,8 +64,6 @@ private:
 
 	private:
 		void maybeSpace();
-
-		std::string moduleFromFileName(const char *file_name);
 
 		enum TTYColor {Black=0, Red, Green, Yellow, Blue, Magenta, Cyan, White};
 
