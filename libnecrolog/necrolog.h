@@ -51,7 +51,7 @@ private:
 	static int moduleNameStart(const char *file_name);
 	static std::string moduleFromFileName(const char *file_name);
 private:
-	class Necro {
+	class NECROLOG_DECL_EXPORT Necro {
 		friend class NecroLog;
 	public:
 		Necro(std::ostream &os, NecroLog::Level level, LogContext &&log_context);
