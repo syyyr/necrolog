@@ -27,12 +27,13 @@ public:
 public:
 	NecroLog(std::ostream &os, Level level, LogContext &&log_context)
 	{
-		m_necro = std::make_shared<Necro>(os, level, std::move(log_context));
+		if(level > Level::Invalid)
+			m_necro = std::make_shared<Necro>(os, level, std::move(log_context));
 	}
 
 	template<typename T>
-	NecroLog& operator<<(const T &v) {*m_necro << v; return *this;}
-	NecroLog& nospace() {m_necro->setSpace(false); return *this;}
+	NecroLog& operator<<(const T &v) {if(m_necro) *m_necro << v; return *this;}
+	NecroLog& nospace() {if(m_necro) m_necro->setSpace(false); return *this;}
 
 	static NecroLog create(std::ostream &os, Level level, LogContext &&log_context);
 	static bool shouldLog(Level level, const LogContext &context);
