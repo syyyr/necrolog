@@ -218,7 +218,7 @@ int NecroLog::moduleNameStart(const char *file_name)
 	if(file_name) {
 		for (int ix = 0; file_name[ix]; ++ix) {
 			if(file_name[ix] == sep)
-				ret = ix;
+				ret = ix+1;
 		}
 	}
 	return ret;
