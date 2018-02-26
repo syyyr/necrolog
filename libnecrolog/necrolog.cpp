@@ -250,7 +250,7 @@ std::ostream & set_TTY_color(std::ostream &os, TTYColor color, bool bright, bool
 void NecroLog::defaultMessageHandler(NecroLog::Level level, const NecroLog::LogContext &context, std::string &&msg)
 {
 	if(is_TTI < 0) {
-#ifdef __GNUC__
+#ifdef __unix
 	is_TTI = ::isatty(STDERR_FILENO);
 #else
 	is_TTI = 0;
