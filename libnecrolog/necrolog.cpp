@@ -248,7 +248,11 @@ std::ostream & set_TTY_color(bool is_tty, std::ostream &os, TTYColor color, bool
 void NecroLog::defaultMessageHandler(NecroLog::Level level, const NecroLog::LogContext &context, std::string &&msg)
 {
 	std::ostream &os = std::clog;
+#ifdef __unix
 	const bool is_tty = ::isatty(STDERR_FILENO);
+#else
+	const bool is_tty = false;
+#endif
 
 	std::time_t t = std::time(nullptr);
 	std::tm *tm = std::gmtime(&t); /// gmtime is not thread safe!!!
