@@ -236,11 +236,9 @@ namespace {
 
 enum TTYColor {Black=0, Red, Green, Yellow, Blue, Magenta, Cyan, White};
 
-static int is_TTI = -1;
-
-std::ostream & set_TTY_color(std::ostream &os, TTYColor color, bool bright, bool bg_color = false)
+std::ostream & set_TTY_color(bool is_tty, std::ostream &os, TTYColor color, bool bright, bool bg_color = false)
 {
-	if(is_TTI)
+	if(is_tty)
 		os << "\033[" << (bright? '1': '0') << ';' << (bg_color? '4': '3') << char('0' + color) << 'm';
 	return os;
 }
@@ -249,50 +247,43 @@ std::ostream & set_TTY_color(std::ostream &os, TTYColor color, bool bright, bool
 
 void NecroLog::defaultMessageHandler(NecroLog::Level level, const NecroLog::LogContext &context, std::string &&msg)
 {
-	if(is_TTI < 0) {
-#ifdef __unix
-	is_TTI = ::isatty(STDERR_FILENO);
-#else
-	is_TTI = 0;
-#endif
-	}
-
 	std::ostream &os = std::clog;
+	const bool is_tty = ::isatty(STDERR_FILENO);
 
 	std::time_t t = std::time(nullptr);
 	std::tm *tm = std::gmtime(&t); /// gmtime is not thread safe!!!
 	char buffer[80] = {0};
 	std::strftime(buffer, sizeof(buffer),"%Y-%m-%dT%H:%M:%S", tm);
-	set_TTY_color(os, TTYColor::Green, false) << std::string(buffer);
-	set_TTY_color(os, TTYColor::Yellow, false) << '[' << moduleFromFileName(context.file()) << ':' << context.line() << "]";
+	set_TTY_color(is_tty, os, TTYColor::Green, false) << std::string(buffer);
+	set_TTY_color(is_tty, os, TTYColor::Yellow, false) << '[' << moduleFromFileName(context.file()) << ':' << context.line() << "]";
 	if(context.isTopicSet()) {
-		set_TTY_color(os, TTYColor::White, true) << '(' << context.topic() << ")";
+		set_TTY_color(is_tty, os, TTYColor::White, true) << '(' << context.topic() << ")";
 	}
 	switch(level) {
 	case NecroLog::Level::Fatal:
-		set_TTY_color(os, TTYColor::Red, true) << "|F|";
+		set_TTY_color(is_tty, os, TTYColor::Red, true) << "|F|";
 		break;
 	case NecroLog::Level::Error:
-		set_TTY_color(os, TTYColor::Red, true) << "|E|";
+		set_TTY_color(is_tty, os, TTYColor::Red, true) << "|E|";
 		break;
 	case NecroLog::Level::Warning:
-		set_TTY_color(os, TTYColor::Magenta, true) << "|W|";
+		set_TTY_color(is_tty, os, TTYColor::Magenta, true) << "|W|";
 		break;
 	case NecroLog::Level::Info:
-		set_TTY_color(os, TTYColor::Cyan, true) << "|I|";
+		set_TTY_color(is_tty, os, TTYColor::Cyan, true) << "|I|";
 		break;
 	case NecroLog::Level::Debug:
-		set_TTY_color(os, TTYColor::White, false) << "|D|";
+		set_TTY_color(is_tty, os, TTYColor::White, false) << "|D|";
 		break;
 	default:
-		set_TTY_color(os, TTYColor::Red, true) << "|?|";
+		set_TTY_color(is_tty, os, TTYColor::Red, true) << "|?|";
 		break;
 	};
 	os << " ";
 
 	os << msg;
 
-	if(is_TTI)
+	if(is_tty)
 		os << "\33[0m";
 
 	os << std::endl;
