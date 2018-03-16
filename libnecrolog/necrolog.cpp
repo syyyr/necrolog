@@ -21,9 +21,11 @@ NecroLog NecroLog::create(Level level, LogContext &&log_context)
 
 bool NecroLog::shouldLog(Level level, const LogContext &context)
 {
+	//std::clog << levelToString(level) << " -> " << context.file() << std::endl;
 	Options &opts = NecroLog::globalOptions();
 
 	const bool topic_set = (context.isTopicSet());
+	//std::clog << "\t topic set: " << topic_set << " file trsholds empty: " << opts.fileTresholds.empty() << std::endl;
 	if(!topic_set && opts.fileTresholds.empty())
 		return level <= Level::Info; // when tresholds are not set, log non-topic INFO messages
 
@@ -36,10 +38,11 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 		if(!opts.logLongFileNames) {
 			int ix = moduleNameStart(searched_str);
 			if(ix >= 0)
-				searched_str += ix + 1;
+				searched_str += ix;
 		}
 	}
 
+	//std::clog << "\t searched str: " << searched_str << std::endl;
 	const std::map<std::string, Level> &tresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
 	for(const auto &pair : tresholds) {
 		const std::string &needle = pair.first;
@@ -128,22 +131,28 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 	return ret;
 }
 
-static std::string tersholds_to_string(const std::map<std::string, NecroLog::Level> &tresholds)
+const char* NecroLog::levelToString(NecroLog::Level level)
+{
+	switch(level) {
+	case NecroLog::Level::Debug: return "Debug";
+	case NecroLog::Level::Info: return "Info";
+	case NecroLog::Level::Warning: return "Warning";
+	case NecroLog::Level::Error: return "Error";
+	case NecroLog::Level::Fatal: return "Fatal";
+	case NecroLog::Level::Invalid: return "Invalid";
+	}
+	return "???";
+}
+
+static std::string levels_to_string(const std::map<std::string, NecroLog::Level> &tresholds)
 {
 	std::string ret;
 	for (auto& kv : tresholds) {
 		if(!ret.empty())
 			ret += ',';
 		ret += kv.first + ':';
-		switch(kv.second) {
-		case NecroLog::Level::Debug: ret += 'D'; break;
-		case NecroLog::Level::Info: ret += 'I'; break;
-		case NecroLog::Level::Warning: ret += 'W'; break;
-		case NecroLog::Level::Error: ret += 'E'; break;
-		case NecroLog::Level::Fatal: ret += 'F'; break;
-		case NecroLog::Level::Invalid: ret += 'N'; break;
-		default: ret += '?'; break;
-		}
+		const char *level_str = NecroLog::levelToString(kv.second);
+		ret += level_str[0];
 	}
 	return ret;
 }
@@ -156,10 +165,10 @@ std::string NecroLog::tresholdsLogInfo()
 	if(opts.fileTresholds.empty())
 		ret += ":I";
 	else
-		ret += tersholds_to_string(opts.fileTresholds);
+		ret += levels_to_string(opts.fileTresholds);
 	if(!opts.topicTresholds.empty()) {
 		ret += " -v ";
-		ret += tersholds_to_string(opts.topicTresholds);
+		ret += levels_to_string(opts.topicTresholds);
 	}
 	return ret;
 }

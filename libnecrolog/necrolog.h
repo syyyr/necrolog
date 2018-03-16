@@ -33,6 +33,8 @@ public:
 		int m_line = 0;
 	};
 
+	static const char* levelToString(Level level);
+
 	using MessageHandler = std::function<void (Level level, const LogContext &context, std::string &&msg)>;
 public:
 	NecroLog(Level level, LogContext &&log_context)
