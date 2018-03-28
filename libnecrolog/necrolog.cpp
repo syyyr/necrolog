@@ -25,7 +25,8 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 	Options &opts = NecroLog::globalOptions();
 
 	const bool topic_set = (context.isTopicSet());
-	//std::clog << "\t topic set: " << topic_set << " file trsholds empty: " << opts.fileTresholds.empty() << std::endl;
+	if(topic_set)
+		std::clog << &opts << " level: " << levelToString(level) << " topic: " << context.topic() << std::endl;
 	if(!topic_set && opts.fileTresholds.empty())
 		return level <= Level::Info; // when tresholds are not set, log non-topic INFO messages
 
@@ -42,19 +43,24 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 		}
 	}
 
-	//std::clog << "\t searched str: " << searched_str << std::endl;
+	if(topic_set)
+		std::clog << "\t searched str: " << searched_str << std::endl;
 	const std::map<std::string, Level> &tresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
 	for(const auto &pair : tresholds) {
 		const std::string &needle = pair.first;
+		if(topic_set)
+			std::clog << needle << " vs " << searched_str << std::endl;
 		for (size_t j = 0; searched_str[j]; ++j) {
 			size_t i;
-			//printf("%s vs %s\n", ctx_topic, g_topic.data());
 			for (i = 0; i < needle.size()  && searched_str[i+j]; ++i) {
 				if(tolower(searched_str[i+j]) != needle[i])
 					break;
 			}
-			if(i == needle.size())
+			if(i == needle.size()) {
+				if(topic_set)
+					std::clog << "\t RETURN " << (level <= pair.second) << std::endl;
 				return (level <= pair.second);
+			}
 		}
 	}
 	// not found in tresholds
