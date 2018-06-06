@@ -83,7 +83,7 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 	Options& options = NecroLog::globalOptions();
 	for(int i=1; i<argc; i++) {
 		string s = argv[i];
-		if(s == "-lfn" || s == "--log-long-file-names") {
+		if(s == "--lfn" || s == "--log-long-file-names") {
 			i++;
 			options.logLongFileNames = true;
 		}
@@ -182,7 +182,7 @@ std::string NecroLog::tresholdsLogInfo()
 const char * NecroLog::cliHelp()
 {
 	static const char * ret =
-		"-lfn, --log-long-file-names\n"
+		"--lfn, --log-long-file-names\n"
 		"\tLog long file names\n"
 		"-d [<pattern>]:[D|I|W|E] set file name log treshold\n"
 		"-v, --topic [<pattern>]:[D|I|W|E] set topic log treshold\n"
