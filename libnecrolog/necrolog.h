@@ -35,7 +35,7 @@ public:
 
 	static const char* levelToString(Level level);
 
-	using MessageHandler = std::function<void (Level level, const LogContext &context, std::string &&msg)>;
+	using MessageHandler = std::function<void (Level level, const LogContext &context, const std::string &msg)>;
 public:
 	NecroLog(Level level, LogContext &&log_context)
 	{
@@ -52,12 +52,15 @@ public:
 
 	static MessageHandler setMessageHandler(MessageHandler h);
 
+	static void defaultMessageHandler(Level level, const LogContext &context, const std::string &msg);
+	static void writeWithDefaultFormat(std::ostream &os, bool is_colorized, Level level, const LogContext &context, const std::string &msg);
+	static std::string moduleFromFileName(const char *file_name);
+
 	static std::vector<std::string> setCLIOptions(int argc, char *argv[]);
 	static std::string tresholdsLogInfo();
 	static const char * cliHelp();
 
 private:
-	static void defaultMessageHandler(Level level, const LogContext &context, std::string &&msg);
 	struct Options
 	{
 		std::map<std::string, Level> fileTresholds;
@@ -68,7 +71,6 @@ private:
 
 	static Options& globalOptions();
 	static int moduleNameStart(const char *file_name);
-	static std::string moduleFromFileName(const char *file_name);
 private:
 	class NECROLOG_DECL_EXPORT Necro {
 		friend class NecroLog;
