@@ -34,7 +34,13 @@ int main(int argc, char *argv[])
 
 	nInfo() << "args not used by necro log:" << args;
 
+    nInfo().color(NecroLog::Color::Green) << "Info in custom color";
+
 	nFooInfo() << "Info mesage" << "foo" << "topic";
 	nBarDebug() << "Debug mesage" << "bar" << "topic";
+    
+    nCInfo("SomeTopic") << "Topic info";
+    nCInfo("SomeTopic").color(NecroLog::Color::Yellow) << "Topic info in custom color";
+    
 	return 0;
 }

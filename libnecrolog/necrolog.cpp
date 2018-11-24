@@ -200,20 +200,20 @@ const char * NecroLog::cliHelp()
 	return ret;
 }
 
-NecroLog::Necro::Necro(NecroLog::Level level, NecroLog::LogContext &&log_context)
+NecroLog::NecroLogSharedData::NecroLogSharedData(NecroLog::Level level, NecroLog::LogContext &&log_context)
 	: m_level(level)
 	, m_logContext(std::move(log_context))
 {
 }
 
-NecroLog::Necro::~Necro()
+NecroLog::NecroLogSharedData::~NecroLogSharedData()
 {
 	auto h = globalOptions().messageHandler;
 	if(h)
 		h(m_level, m_logContext, m_os.str());
 }
 
-void NecroLog::Necro::maybeSpace()
+void NecroLog::NecroLogSharedData::maybeSpace()
 {
 	if(m_isSpace && m_os.tellp() > 0) {
 		m_os << ' ';
@@ -249,12 +249,12 @@ std::string NecroLog::moduleFromFileName(const char *file_name)
 
 namespace {
 
-enum TTYColor {Black=0, Red, Green, Yellow, Blue, Magenta, Cyan, White};
+enum TTYColor {Black=0, Red, Green, Brown, Blue, Magenta, Cyan, LightGray, Gray, LightRed, LightGreen, Yellow, LightBlue, LightMagenta, LightCyan, White};
 
-std::ostream & set_TTY_color(bool is_tty, std::ostream &os, TTYColor color, bool bright, bool bg_color = false)
+std::ostream & set_TTY_color(bool is_tty, std::ostream &os, TTYColor color, bool bg_color = false)
 {
 	if(is_tty)
-		os << "\033[" << (bright? '1': '0') << ';' << (bg_color? '4': '3') << char('0' + color) << 'm';
+		os << "\033[" << ((color / 8)? '1': '0') << ';' << (bg_color? '4': '3') << char('0' + (color % 8)) << 'm';
 	return os;
 }
 
@@ -278,29 +278,29 @@ void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, Necro
 	std::tm *tm = std::gmtime(&t); /// gmtime is not thread safe!!!
 	char buffer[80] = {0};
 	std::strftime(buffer, sizeof(buffer),"%Y-%m-%dT%H:%M:%S", tm);
-	set_TTY_color(is_colorized, os, TTYColor::Green, false) << std::string(buffer);
-	set_TTY_color(is_colorized, os, TTYColor::Yellow, false) << '[' << moduleFromFileName(context.file()) << ':' << context.line() << "]";
+	set_TTY_color(is_colorized, os, TTYColor::Green) << std::string(buffer);
+	set_TTY_color(is_colorized, os, TTYColor::Brown) << '[' << moduleFromFileName(context.file()) << ':' << context.line() << "]";
 	if(context.isTopicSet()) {
-		set_TTY_color(is_colorized, os, TTYColor::White, true) << '(' << context.topic() << ")";
+		set_TTY_color(is_colorized, os, TTYColor::White) << '(' << context.topic() << ")";
 	}
 	switch(level) {
 	case NecroLog::Level::Fatal:
-		set_TTY_color(is_colorized, os, TTYColor::Red, true) << "|F|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|F|";
 		break;
 	case NecroLog::Level::Error:
-		set_TTY_color(is_colorized, os, TTYColor::Red, true) << "|E|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|E|";
 		break;
 	case NecroLog::Level::Warning:
-		set_TTY_color(is_colorized, os, TTYColor::Magenta, true) << "|W|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightMagenta) << "|W|";
 		break;
 	case NecroLog::Level::Info:
-		set_TTY_color(is_colorized, os, TTYColor::Cyan, true) << "|I|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightCyan) << "|I|";
 		break;
 	case NecroLog::Level::Debug:
-		set_TTY_color(is_colorized, os, TTYColor::White, false) << "|D|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightGray) << "|D|";
 		break;
 	default:
-		set_TTY_color(is_colorized, os, TTYColor::Red, true) << "|?|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|?|";
 		break;
 	};
 	os << " ";
