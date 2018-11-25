@@ -91,7 +91,7 @@ private:
 		template<typename T>
 		void operator<<(const T &v) {if(m_level != NecroLog::Level::Invalid) {maybeSpace(); m_os << v;}}
 	private:
-		void maybeSpace();
+		void maybeSpace() { if(m_isSpace && m_os.tellp() > 0) m_os << ' '; }
 	private:
 		std::ostringstream m_os;
 		NecroLog::Level m_level;

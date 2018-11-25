@@ -213,13 +213,6 @@ NecroLog::NecroLogSharedData::~NecroLogSharedData()
 		h(m_level, m_logContext, m_os.str());
 }
 
-void NecroLog::NecroLogSharedData::maybeSpace()
-{
-	if(m_isSpace && m_os.tellp() > 0) {
-		m_os << ' ';
-	}
-}
-
 int NecroLog::moduleNameStart(const char *file_name)
 {
 	char sep = '/';
@@ -251,6 +244,35 @@ namespace {
 
 enum TTYColor {Black=0, Red, Green, Brown, Blue, Magenta, Cyan, LightGray, Gray, LightRed, LightGreen, Yellow, LightBlue, LightMagenta, LightCyan, White};
 
+/// ESC[T;FG;BGm
+/// T:
+///   0 - normal
+///   1 - bright
+///   2 - dark
+///   3 - italic
+///   4 - underline
+///   5 - blink
+///   6 - ???
+///   7 - inverse
+///   8 - foreground same as background
+/// FG:
+///   30 - black
+///   31 - red
+///   32 - green
+///   33 - yellow
+///   34 - blue
+///   35 - magenta
+///   36 - cyan
+///   37 - white
+/// BG:
+///   40 - black
+///   41 - red
+///   42 - green
+///   43 - yellow
+///   44 - blue
+///   45 - magenta
+///   46 - cyan
+///   47 - white
 std::ostream & set_TTY_color(bool is_tty, std::ostream &os, TTYColor color, bool bg_color = false)
 {
 	if(is_tty)
