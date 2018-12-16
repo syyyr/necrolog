@@ -122,5 +122,5 @@ private:
 #define nLogFuncFrame() NecroLog __necrolog_func_frame_exit_logger__ = NecroLog::shouldLog(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, ""))? \
 NecroLog::create(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, "")) << "     EXIT FN" << __FUNCTION__: \
 NecroLog::create(NecroLog::Level::Invalid, NecroLog::LogContext(__FILE__, __LINE__, "")); \
-shvDebug() << ">>>> ENTER FN" << __FUNCTION__
+nDebug() << ">>>> ENTER FN" << __FUNCTION__
 #endif
