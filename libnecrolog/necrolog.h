@@ -102,16 +102,16 @@ private:
 	std::shared_ptr<NecroLogSharedData> m_necro;
 };
 
+#ifdef NECROLOG_NO_DEBUG_LOG
+#define nCDebug(topic) while(0) NecroLog::create(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
+#else
 #define nCDebug(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
+#endif
 #define nCInfo(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Info, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Info, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #define nCWarning(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Warning, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Warning, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #define nCError(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic))
 
-#ifdef NECROLOG_NO_DEBUG_LOG
-#define nDebug() while(0) nCDebug("")
-#else
 #define nDebug() nCDebug("")
-#endif
 #define nInfo() nCInfo("")
 #define nWarning() nCWarning("")
 #define nError() nCError("")
