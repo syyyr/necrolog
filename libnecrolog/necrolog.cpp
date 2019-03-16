@@ -179,6 +179,29 @@ std::string NecroLog::tresholdsLogInfo()
 	return ret;
 }
 
+void NecroLog::registerTopic(const std::string &topic, const std::string &info)
+{
+	Options &opts = NecroLog::globalOptions();
+	opts.registeredTopics[topic] = info;
+}
+
+std::string NecroLog::registeredTopicsInfo()
+{
+	std::string ret;
+	Options &opts = NecroLog::globalOptions();
+	if(!opts.registeredTopics.empty()) {
+		ret += "Registered topics:\n";
+		std::string topics;
+		for(const auto &kv : opts.registeredTopics) {
+			if(!topics.empty())
+				topics += '\n';
+			topics += '\t' + kv.first + "\t- " + kv.second;
+		}
+		ret += topics;
+	}
+	return ret;
+}
+
 const char * NecroLog::cliHelp()
 {
 	static const char * ret =

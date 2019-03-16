@@ -65,6 +65,8 @@ public:
 
 	static std::vector<std::string> setCLIOptions(int argc, char *argv[]);
 	static std::string tresholdsLogInfo();
+	static void registerTopic(const std::string &topic, const std::string &info);
+	static std::string registeredTopicsInfo();
 	static const char * cliHelp();
 
 private:
@@ -72,6 +74,7 @@ private:
 	{
 		std::map<std::string, Level> fileTresholds;
 		std::map<std::string, Level> topicTresholds;
+		std::map<std::string, std::string> registeredTopics;
 		bool logLongFileNames = false;
 		MessageHandler messageHandler = defaultMessageHandler;
 	};
