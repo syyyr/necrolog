@@ -76,6 +76,39 @@ NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 	return ret;
 }
 
+static void parse_tresholds_string(const std::string &tresholds, std::map<std::string, NecroLog::Level> &treshold_map)
+{
+	using namespace std;
+	// split on ','
+	size_t pos = 0;
+	while(true) {
+		size_t pos2 = tresholds.find_first_of(',', pos);
+		string topic_level = (pos2 == string::npos)? tresholds.substr(pos): tresholds.substr(pos, pos2 - pos);
+		if(!topic_level.empty()) {
+			auto ix = topic_level.find(':');
+			NecroLog::Level level = NecroLog::Level::Debug;
+			std::string topic = topic_level;
+			if(ix != std::string::npos) {
+				std::string s = topic_level.substr(ix + 1, 1);
+				char l = s.empty()? 'D': toupper(s[0]);
+				topic = topic_level.substr(0, ix);
+				switch(l) {
+				case 'D': level = NecroLog::Level::Debug; break;
+				case 'W': level = NecroLog::Level::Warning; break;
+				case 'E': level = NecroLog::Level::Error; break;
+				case 'I':
+				default: level = NecroLog::Level::Info; break;
+				}
+			}
+			std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
+			treshold_map[topic] = level;
+		}
+		if(pos2 == string::npos)
+			break;
+		pos = pos2 + 1;
+	}
+}
+
 std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 {
 	using namespace std;
@@ -95,39 +128,7 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 				i--;
 				tresholds = ":D";
 			}
-			{
-				// split on ','
-				size_t pos = 0;
-				while(true) {
-					size_t pos2 = tresholds.find_first_of(',', pos);
-					string topic_level = (pos2 == string::npos)? tresholds.substr(pos): tresholds.substr(pos, pos2 - pos);
-					if(!topic_level.empty()) {
-						auto ix = topic_level.find(':');
-						Level level = Level::Debug;
-						std::string topic = topic_level;
-						if(ix != std::string::npos) {
-							std::string s = topic_level.substr(ix + 1, 1);
-							char l = s.empty()? 'D': toupper(s[0]);
-							topic = topic_level.substr(0, ix);
-							switch(l) {
-							case 'D': level = Level::Debug; break;
-							case 'W': level = Level::Warning; break;
-							case 'E': level = Level::Error; break;
-							case 'I':
-							default: level = Level::Info; break;
-							}
-						}
-						std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
-						if(use_topics)
-							options.topicTresholds[topic] = level;
-						else
-							options.fileTresholds[topic] = level;
-					}
-					if(pos2 == string::npos)
-						break;
-					pos = pos2 + 1;
-				}
-			}
+			parse_tresholds_string(tresholds, use_topics? options.topicTresholds: options.fileTresholds);
 		}
 		else {
 			ret.push_back(s);
@@ -135,6 +136,13 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 	}
 	ret.insert(ret.begin(), argv[0]);
 	return ret;
+}
+
+void NecroLog::setTopicsLogTresholds(const std::string &tresholds)
+{
+	std::map<std::string, NecroLog::Level> &treshold_map = NecroLog::globalOptions().topicTresholds;
+	treshold_map.clear();
+	parse_tresholds_string(tresholds, treshold_map);
 }
 
 const char* NecroLog::levelToString(NecroLog::Level level)
@@ -171,12 +179,25 @@ std::string NecroLog::tresholdsLogInfo()
 	if(opts.fileTresholds.empty())
 		ret += ":I";
 	else
-		ret += levels_to_string(opts.fileTresholds);
+		ret += fileLogTresholds();
 	if(!opts.topicTresholds.empty()) {
 		ret += " -v ";
-		ret += levels_to_string(opts.topicTresholds);
+		ret += topicsLogTresholds();
 	}
 	return ret;
+}
+
+std::string NecroLog::topicsLogTresholds()
+{
+	Options &opts = NecroLog::globalOptions();
+	return levels_to_string(opts.topicTresholds);
+}
+
+std::string NecroLog::fileLogTresholds()
+{
+	std::string ret;
+	Options &opts = NecroLog::globalOptions();
+	return levels_to_string(opts.fileTresholds);
 }
 
 void NecroLog::registerTopic(const std::string &topic, const std::string &info)

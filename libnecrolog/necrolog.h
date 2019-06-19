@@ -65,6 +65,9 @@ public:
 
 	static std::vector<std::string> setCLIOptions(int argc, char *argv[]);
 	static std::string tresholdsLogInfo();
+	static std::string topicsLogTresholds();
+	static void setTopicsLogTresholds(const std::string &tresholds);
+	static std::string fileLogTresholds();
 	static void registerTopic(const std::string &topic, const std::string &info);
 	static std::string registeredTopicsInfo();
 	static const char * cliHelp();
