@@ -94,6 +94,7 @@ static void parse_tresholds_string(const std::string &tresholds, std::map<std::s
 				topic = topic_level.substr(0, ix);
 				switch(l) {
 				case 'D': level = NecroLog::Level::Debug; break;
+				case 'M': level = NecroLog::Level::Message; break;
 				case 'W': level = NecroLog::Level::Warning; break;
 				case 'E': level = NecroLog::Level::Error; break;
 				case 'I':
@@ -149,7 +150,8 @@ const char* NecroLog::levelToString(NecroLog::Level level)
 {
 	switch(level) {
 	case NecroLog::Level::Debug: return "Debug";
-	case NecroLog::Level::Info: return "Info";
+	case NecroLog::Level::Info: return "Message";
+	case NecroLog::Level::Message: return "Info";
 	case NecroLog::Level::Warning: return "Warning";
 	case NecroLog::Level::Error: return "Error";
 	case NecroLog::Level::Fatal: return "Fatal";
@@ -228,7 +230,7 @@ const char * NecroLog::cliHelp()
 	static const char * ret =
 		"--lfn, --log-long-file-names\n"
 		"\tLog long file names\n"
-		"-d [<pattern>]:[D|I|W|E] set file name log treshold\n"
+		"-d [<pattern>]:[D|M|I|W|E] set file name log treshold\n"
 		"-v, --topic [<pattern>]:[D|I|W|E] set topic log treshold\n"
 		"\tSet log treshold\n"
 		"\tset treshold for all files or topics containing pattern to treshold D|I|W|E\n"
@@ -362,13 +364,16 @@ void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, Necro
 	case NecroLog::Level::Info:
 		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightCyan) << "|I|";
 		break;
+	case NecroLog::Level::Message:
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::Yellow) << "|M|";
+		break;
 	case NecroLog::Level::Debug:
 		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightGray) << "|D|";
 		break;
 	default:
 		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|?|";
 		break;
-	};
+	}
 	os << " ";
 
 	os << msg;

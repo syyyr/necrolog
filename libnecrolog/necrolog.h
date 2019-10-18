@@ -13,7 +13,7 @@ class NECROLOG_DECL_EXPORT NecroLog
 {
 	friend class NecroLogSharedData;
 public:
-	enum class Level : uint8_t {Invalid = 0, Fatal, Error, Warning, Info, Debug};
+	enum class Level : uint8_t {Invalid = 0, Fatal, Error, Warning, Info, Message, Debug};
 	enum class Color : int8_t {Default = -1, Black=0, Red, Green, Brown, Blue, Magenta, Cyan, LightGray, Gray, LightRed, LightGreen, Yellow, LightBlue, LightMagenta, LightCyan, White};
 	class NECROLOG_DECL_EXPORT LogContext
 	{
@@ -114,6 +114,7 @@ private:
 #define nCDebug(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #endif
 #define nCInfo(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Info, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Info, NecroLog::LogContext(__FILE__, __LINE__, topic))
+#define nCMessage(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Message, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Message, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #define nCWarning(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Warning, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Warning, NecroLog::LogContext(__FILE__, __LINE__, topic))
 #define nCError(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic))
 
