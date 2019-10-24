@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 	nInfo() << NecroLog::tresholdsLogInfo();
 
 	nDebug() << "Debug mesage";
+	nMessage() << "Message mesage";
 	nInfo() << "Info mesage";
 	nWarning() << "Warning mesage";
 	nError() << "Error mesage";
@@ -38,9 +39,9 @@ int main(int argc, char *argv[])
 
 	nFooInfo() << "Info mesage" << "foo" << "topic";
 	nBarDebug() << "Debug mesage" << "bar" << "topic";
-    
+
     nCInfo("SomeTopic") << "Topic info";
     nCInfo("SomeTopic").color(NecroLog::Color::Yellow) << "Topic info in custom color";
-    
+
 	return 0;
 }
