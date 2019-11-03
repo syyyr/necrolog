@@ -119,6 +119,7 @@ private:
 #define nCError(topic) for(bool en = NecroLog::shouldLog(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic)); en; en = false) NecroLog::create(NecroLog::Level::Error, NecroLog::LogContext(__FILE__, __LINE__, topic))
 
 #define nDebug() nCDebug("")
+#define nMessage() nCMessage("")
 #define nInfo() nCInfo("")
 #define nWarning() nCWarning("")
 #define nError() nCError("")
