@@ -51,6 +51,7 @@ public:
 
 	template<typename T>
 	NecroLog& operator<<(const T &v) {if(m_necro) *m_necro << v; return *this;}
+	NecroLog& operator<<(bool b) {if(m_necro) *m_necro << (b? "true": "false"); return *this;}
 	NecroLog& nospace() {if(m_necro) m_necro->setSpace(false); return *this;}
 	NecroLog& color(NecroLog::Color c) {if(m_necro) m_necro->setColor(c); return *this;}
 
@@ -107,6 +108,8 @@ private:
 private:
 	std::shared_ptr<NecroLogSharedData> m_necro;
 };
+
+//template<> inline NecroLog& NecroLog::operator<<(const bool &b) {if(m_necro) *m_necro << (b? "true": "false"); return *this;}
 
 #ifdef NECROLOG_NO_DEBUG_LOG
 #define nCDebug(topic) while(0) NecroLog::create(NecroLog::Level::Debug, NecroLog::LogContext(__FILE__, __LINE__, topic))
