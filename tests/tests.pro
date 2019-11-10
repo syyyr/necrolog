@@ -2,6 +2,8 @@ TEMPLATE = app
 
 QT -= core widgets
 
+TARGET = necro-test
+
 isEmpty(SHV_PROJECT_TOP_BUILDDIR) {
 	SHV_PROJECT_TOP_BUILDDIR=$$shadowed($$PWD)/..
 }
