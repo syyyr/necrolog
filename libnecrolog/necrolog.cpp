@@ -365,7 +365,7 @@ void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, Necro
 		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightCyan) << "|I|";
 		break;
 	case NecroLog::Level::Message:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::Yellow) << "|M|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::Brown) << "|M|";
 		break;
 	case NecroLog::Level::Debug:
 		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightGray) << "|D|";
