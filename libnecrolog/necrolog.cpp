@@ -21,7 +21,7 @@ NecroLog NecroLog::create(Level level, LogContext &&log_context)
 
 bool NecroLog::shouldLog(Level level, const LogContext &context)
 {
-	//std::clog << levelToString(level) << " -> " << context.file() << std::endl;
+	//std::clog << levelToString(level) << " -> " << context.file() << ':' << context.line() << " topic: " << context.topic() << std::endl;
 	Options &opts = NecroLog::globalOptions();
 
 	const bool topic_set = (context.isTopicSet());
@@ -51,14 +51,14 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 	const std::map<std::string, Level> &tresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
 	for(const auto &kv : tresholds) {
 		const std::string &needle = kv.first;
-		if(kv.second > level) {
+		if(level > kv.second) {
 			// level too high, no need to compare strings
 			continue;
 		}
 #ifdef STARTS_WITH_ONLY
 		size_t i;
 		for (i = 0; i < needle.size() && searched_str[i]; ++i) {
-			if(tolower(needle[i]) != searched_str[i])
+			if(needle[i] != tolower(searched_str[i]))
 				break;
 		}
 		if(i == needle.size()) {
@@ -164,8 +164,8 @@ const char* NecroLog::levelToString(NecroLog::Level level)
 {
 	switch(level) {
 	case NecroLog::Level::Debug: return "Debug";
-	case NecroLog::Level::Info: return "Message";
-	case NecroLog::Level::Message: return "Info";
+	case NecroLog::Level::Info: return "Info";
+	case NecroLog::Level::Message: return "Message";
 	case NecroLog::Level::Warning: return "Warning";
 	case NecroLog::Level::Error: return "Error";
 	case NecroLog::Level::Fatal: return "Fatal";
