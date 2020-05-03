@@ -45,11 +45,26 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 
 	//if(topic_set)
 	//	std::clog << "\t searched str: " << searched_str << std::endl;
+
+#define STARTS_WITH_ONLY
+
 	const std::map<std::string, Level> &tresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
-	for(const auto &pair : tresholds) {
-		const std::string &needle = pair.first;
-		//if(topic_set)
-		//	std::clog << needle << " vs " << searched_str << std::endl;
+	for(const auto &kv : tresholds) {
+		const std::string &needle = kv.first;
+		if(kv.second > level) {
+			// level too high, no need to compare strings
+			continue;
+		}
+#ifdef STARTS_WITH_ONLY
+		size_t i;
+		for (i = 0; i < needle.size() && searched_str[i]; ++i) {
+			if(tolower(needle[i]) != searched_str[i])
+				break;
+		}
+		if(i == needle.size()) {
+			return true;
+		}
+#else
 		for (size_t j = 0; searched_str[j]; ++j) {
 			size_t i;
 			for (i = 0; i < needle.size()  && searched_str[i+j]; ++i) {
@@ -57,11 +72,10 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 					break;
 			}
 			if(i == needle.size()) {
-				//if(topic_set)
-				//	std::clog << "\t RETURN " << (level <= pair.second) << std::endl;
-				return (level <= pair.second);
+				return true;
 			}
 		}
+#endif
 	}
 	// not found in tresholds
 	if(!topic_set)
