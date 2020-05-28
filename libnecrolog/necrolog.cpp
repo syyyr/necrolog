@@ -48,19 +48,20 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 
 #define STARTS_WITH_ONLY
 
-	const std::map<std::string, Level> &tresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
-	for(const auto &kv : tresholds) {
-		const std::string &needle = kv.first;
+	const std::map<std::string, Level> &thresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
+	for(const auto &kv : thresholds) {
 		if(level > kv.second) {
 			// level too high, no need to compare strings
 			continue;
 		}
+		const std::string &needle = kv.first;
 #ifdef STARTS_WITH_ONLY
 		size_t i;
 		for (i = 0; i < needle.size() && searched_str[i]; ++i) {
 			if(needle[i] != tolower(searched_str[i]))
 				break;
 		}
+		//std::clog << "needle: '" << needle << "' searched str: '" << searched_str << "' i: " << i << std::endl;
 		if(i == needle.size()) {
 			return true;
 		}
@@ -78,7 +79,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 #endif
 	}
 	// not found in tresholds
-	if(!topic_set)
+	if(!topic_set && thresholds.empty())
 		return level <= Level::Info; // log non-topic INFO messages
 	return false;
 }
