@@ -69,6 +69,7 @@ public:
 	static std::string topicsLogTresholds();
 	static void setTopicsLogTresholds(const std::string &tresholds);
 	static std::string fileLogTresholds();
+	static void setFileLogTresholds(const std::string &tresholds);
 	static void registerTopic(const std::string &topic, const std::string &info);
 	static std::string registeredTopicsInfo();
 	static const char * cliHelp();

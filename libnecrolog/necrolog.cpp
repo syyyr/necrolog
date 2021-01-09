@@ -219,6 +219,13 @@ std::string NecroLog::fileLogTresholds()
 	return levels_to_string(opts.fileTresholds);
 }
 
+void NecroLog::setFileLogTresholds(const std::string &tresholds)
+{
+	std::map<std::string, NecroLog::Level> &treshold_map = NecroLog::globalOptions().fileTresholds;
+	treshold_map.clear();
+	parse_tresholds_string(tresholds, treshold_map);
+}
+
 void NecroLog::registerTopic(const std::string &topic, const std::string &info)
 {
 	Options &opts = NecroLog::globalOptions();
