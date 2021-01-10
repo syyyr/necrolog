@@ -40,6 +40,7 @@ public:
 	};
 
 	static const char* levelToString(Level level);
+	static Level stringToLevel(const char *str);
 
 	using MessageHandler = std::function<void (Level level, const LogContext &context, const std::string &msg)>;
 public:

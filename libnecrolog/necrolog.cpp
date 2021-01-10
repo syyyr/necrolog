@@ -172,9 +172,24 @@ const char* NecroLog::levelToString(NecroLog::Level level)
 	case NecroLog::Level::Warning: return "Warning";
 	case NecroLog::Level::Error: return "Error";
 	case NecroLog::Level::Fatal: return "Fatal";
-	case NecroLog::Level::Invalid: return "Invalid";
+	case NecroLog::Level::Invalid: return ""; // should not be used, even as string
 	}
-	return "???";
+	return "";
+}
+
+NecroLog::Level NecroLog::stringToLevel(const char *str)
+{
+	if(str && *str != 0) {
+		switch(str[0]) {
+			case 'D': return NecroLog::Level::Debug;
+			case 'M': return NecroLog::Level::Message;
+			case 'I': return NecroLog::Level::Info;
+			case 'W': return NecroLog::Level::Warning;
+			case 'E': return NecroLog::Level::Error;
+			case 'F': return NecroLog::Level::Fatal;
+		}
+	}
+	return NecroLog::Level::Invalid;
 }
 
 static std::string levels_to_string(const std::map<std::string, NecroLog::Level> &tresholds)
