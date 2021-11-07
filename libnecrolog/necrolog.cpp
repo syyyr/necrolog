@@ -181,11 +181,17 @@ NecroLog::Level NecroLog::stringToLevel(const char *str)
 {
 	if(str && *str != 0) {
 		switch(str[0]) {
+			case 'd':
 			case 'D': return NecroLog::Level::Debug;
+			case 'm':
 			case 'M': return NecroLog::Level::Message;
+			case 'i':
 			case 'I': return NecroLog::Level::Info;
+			case 'w':
 			case 'W': return NecroLog::Level::Warning;
+			case 'e':
 			case 'E': return NecroLog::Level::Error;
+			case 'f':
 			case 'F': return NecroLog::Level::Fatal;
 		}
 	}
