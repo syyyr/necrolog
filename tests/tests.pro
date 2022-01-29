@@ -22,8 +22,13 @@ INCLUDEPATH += \
 	../include
 
 LIBS += \
-    -L$$shadowed($$PWD)/../lib \
+	-L$$LIBDIR/lib \
     -lnecrolog
+
+unix {
+	LIBS += \
+		-Wl,-rpath,\'\$\$ORIGIN/../lib\'
+}
 
 SOURCES += \
 	necro-test.cpp \

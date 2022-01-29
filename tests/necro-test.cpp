@@ -8,7 +8,7 @@
 #define nFooInfo() nCInfo("foo")
 #define nBarDebug() nCDebug("bar")
 
-inline NecroLog &operator<<(NecroLog log, const std::vector<std::string> &sl)
+inline NecroLog &operator<<(NecroLog &log, const std::vector<std::string> &sl)
 {
 	std::string s = std::accumulate(sl.begin(), sl.end(), std::string(),
 									[](const std::string& a, const std::string& b) -> std::string {
@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
 
 	nCInfo("SomeTopic") << "Topic info";
 	nCInfo("SomeTopic").color(NecroLog::Color::Yellow) << "Topic info in custom color";
+
+	const std::vector<std::string> sl{"foo", "bar", "baz"};
+	nInfo() << "custom type (string list):" << sl;
 
 	return 0;
 }

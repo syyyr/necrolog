@@ -9,7 +9,7 @@ TEMPLATE = lib
 TARGET = necrolog
 
 isEmpty(SHV_PROJECT_TOP_BUILDDIR) {
-    SHV_PROJECT_TOP_BUILDDIR=$$shadowed($$PWD)/../../..
+	SHV_PROJECT_TOP_BUILDDIR=$$shadowed($$PWD)/..
 }
 message ( SHV_PROJECT_TOP_BUILDDIR: '$$SHV_PROJECT_TOP_BUILDDIR' )
 
