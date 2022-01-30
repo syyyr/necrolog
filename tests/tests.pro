@@ -1,13 +1,10 @@
+include( ../subproject_integration.pri )
+
 TEMPLATE = app
 
 QT -= core widgets
 
 TARGET = necro-test
-
-isEmpty(SHV_PROJECT_TOP_BUILDDIR) {
-	SHV_PROJECT_TOP_BUILDDIR=$$shadowed($$PWD)/..
-}
-message ( SHV_PROJECT_TOP_BUILDDIR: '$$SHV_PROJECT_TOP_BUILDDIR' )
 
 DESTDIR = $$SHV_PROJECT_TOP_BUILDDIR/bin
 
