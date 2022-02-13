@@ -1,6 +1,7 @@
 #pragma once
 
 #include "necrologglobal.h"
+#include "necrologlevel.h"
 
 #include <vector>
 #include <string>
@@ -13,7 +14,7 @@ class NECROLOG_DECL_EXPORT NecroLog
 {
 	friend class NecroLogSharedData;
 public:
-	enum class Level : uint8_t {Invalid = 0, Fatal, Error, Warning, Info, Message, Debug};
+	using Level = NecroLogLevel;
 	enum class Color : int8_t {Default = -1, Black=0, Red, Green, Brown, Blue, Magenta, Cyan, LightGray, Gray, LightRed, LightGreen, Yellow, LightBlue, LightMagenta, LightCyan, White};
 	class NECROLOG_DECL_EXPORT LogContext
 	{

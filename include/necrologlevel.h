@@ -1,0 +1,1 @@
+#include "../libnecrolog/necrologlevel.h"
