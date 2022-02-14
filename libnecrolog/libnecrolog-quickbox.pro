@@ -1,4 +1,7 @@
-include( ../subproject_integration.pri )
+# We need this hack until quickbox
+# will not be split to 2 projects (quickevent + libqf)
+SHV_PROJECT_TOP_BUILDDIR=$$shadowed($$PWD)/../../..
+SHV_PROJECT_TOP_SRCDIR=$$PWD/../../..
 
 QT -= core gui
 
@@ -14,12 +17,6 @@ win32:DESTDIR = $$SHV_PROJECT_TOP_BUILDDIR/bin
 message ( DESTDIR: $$DESTDIR )
 
 DEFINES += NECROLOG_BUILD_DLL
-
-INCLUDEPATH += \
-
-LIBS += \
-    #-L$$DESTDIR \
-    #-lqfcore
 
 SOURCES += \
     necrolog.cpp
