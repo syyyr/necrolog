@@ -76,6 +76,9 @@ public:
 	static std::string registeredTopicsInfo();
 	static const char * cliHelp();
 
+	enum class ColorizedOutputMode {IfTty, Yes, No };
+	static ColorizedOutputMode colorizedOutputMode();
+	static void setColorizedOutputMode(ColorizedOutputMode mode);
 private:
 	struct Options
 	{
@@ -83,6 +86,7 @@ private:
 		std::map<std::string, Level> topicTresholds;
 		std::map<std::string, std::string> registeredTopics;
 		bool logLongFileNames = false;
+		ColorizedOutputMode colorizedOutput = ColorizedOutputMode::IfTty;
 		MessageHandler messageHandler = defaultMessageHandler;
 	};
 

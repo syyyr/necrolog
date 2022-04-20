@@ -270,6 +270,16 @@ std::string NecroLog::registeredTopicsInfo()
 	return ret;
 }
 
+NecroLog::ColorizedOutputMode NecroLog::colorizedOutputMode()
+{
+	return NecroLog::globalOptions().colorizedOutput;
+}
+
+void NecroLog::setColorizedOutputMode(ColorizedOutputMode mode)
+{
+	NecroLog::globalOptions().colorizedOutput = mode;
+}
+
 const char * NecroLog::cliHelp()
 {
 	static const char * ret =
@@ -376,13 +386,26 @@ std::ostream & set_TTY_color(bool is_tty, std::ostream &os, TTYColor color, bool
 void NecroLog::defaultMessageHandler(NecroLog::Level level, const NecroLog::LogContext &context, const std::string &msg)
 {
 	std::ostream &os = std::clog;
-#ifdef __unix
-	const bool is_tty = ::isatty(STDERR_FILENO);
-#else
-	const bool is_tty = false;
-#endif
+	bool is_colorized = true;
+	switch(NecroLog::colorizedOutputMode()) {
+	case NecroLog::ColorizedOutputMode::IfTty: {
+	#ifdef __unix
+		static const bool is_tty = ::isatty(STDERR_FILENO);
+	#else
+		const bool is_tty = false;
+	#endif
+		is_colorized = is_tty;
+		break;
+	}
+	case NecroLog::ColorizedOutputMode::Yes:
+		is_colorized = true;
+		break;
+	case NecroLog::ColorizedOutputMode::No:
+		is_colorized = false;
+		break;
 
-	writeWithDefaultFormat(os, is_tty, level, context, msg);
+	}
+	writeWithDefaultFormat(os, is_colorized, level, context, msg);
 }
 
 void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, NecroLog::Level level, const NecroLog::LogContext &context, const std::string &msg)
