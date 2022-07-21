@@ -15,3 +15,7 @@ if(BUILD_TESTING)
     target_include_directories(necro-test PRIVATE libnecrolog)
     target_link_libraries(necro-test PRIVATE libnecrolog)
 endif()
+
+install(TARGETS libnecrolog)
+install(DIRECTORY libnecrolog TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY include/ TYPE INCLUDE)
