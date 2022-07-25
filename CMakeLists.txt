@@ -8,6 +8,7 @@ add_library(libnecrolog SHARED libnecrolog/necrolog.cpp)
 
 target_include_directories(libnecrolog PUBLIC libnecrolog)
 target_include_directories(libnecrolog PUBLIC include)
+target_compile_definitions(libnecrolog PRIVATE NECROLOG_BUILD_DLL)
 
 if(BUILD_TESTING)
     add_executable(necro-test tests/necro-test.cpp)
