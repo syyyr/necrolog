@@ -19,4 +19,3 @@ endif()
 
 install(TARGETS libnecrolog)
 install(DIRECTORY libnecrolog TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY include/ TYPE INCLUDE)
