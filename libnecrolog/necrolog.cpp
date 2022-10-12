@@ -421,25 +421,25 @@ void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, Necro
 	}
 	switch(level) {
 	case NecroLog::Level::Fatal:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|F|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::LightRed) << "|F|";
 		break;
 	case NecroLog::Level::Error:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|E|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::LightRed) << "|E|";
 		break;
 	case NecroLog::Level::Warning:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightMagenta) << "|W|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::LightMagenta) << "|W|";
 		break;
 	case NecroLog::Level::Info:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightCyan) << "|I|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::LightCyan) << "|I|";
 		break;
 	case NecroLog::Level::Message:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::Brown) << "|M|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::Brown) << "|M|";
 		break;
 	case NecroLog::Level::Debug:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightGray) << "|D|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::LightGray) << "|D|";
 		break;
 	default:
-		set_TTY_color(is_colorized, os, context.isColorSet()? (TTYColor)context.color(): TTYColor::LightRed) << "|?|";
+		set_TTY_color(is_colorized, os, context.isColorSet()? static_cast<TTYColor>(context.color()): TTYColor::LightRed) << "|?|";
 		break;
 	}
 	os << " ";
