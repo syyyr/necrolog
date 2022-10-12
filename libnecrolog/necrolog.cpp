@@ -107,7 +107,7 @@ static void parse_tresholds_string(const std::string &tresholds, std::map<std::s
 			std::string topic = topic_level;
 			if(ix != std::string::npos) {
 				std::string s = topic_level.substr(ix + 1, 1);
-				char l = s.empty()? 'D': toupper(s[0]);
+				char l = s.empty()? 'D': static_cast<char>(toupper(s[0]));
 				topic = topic_level.substr(0, ix);
 				switch(l) {
 				case 'D': level = NecroLog::Level::Debug; break;
