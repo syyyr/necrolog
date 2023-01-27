@@ -71,6 +71,7 @@ public:
 	static std::string thresholdsLogInfo();
 	[[deprecated]] static std::string tresholdsLogInfo() {return thresholdsLogInfo();}
 	static std::string topicsLogThresholds();
+	[[deprecated]] static void topicsLogTresholds() { topicsLogThresholds(); }
 	static void setTopicsLogThresholds(const std::string &thresholds);
 	[[deprecated]] static void setTopicsLogTresholds(const std::string &thresholds) { setTopicsLogThresholds(thresholds); }
 	//static std::string fileLogTresholds();
