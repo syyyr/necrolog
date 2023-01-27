@@ -2,90 +2,68 @@
 
 #include <numeric>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <sstream>
 #include <iterator>
 #include <iostream>
+#include <cassert>
 
-#define nFooInfo() nCInfo("foo")
-#define nBarDebug() nCDebug("bar")
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
 using namespace std;
 
-inline NecroLog &operator<<(NecroLog &log, const std::vector<std::string> &sl)
+void log_case(const string &args, const map<const char*, NecroLogLevel> &expected_levels)
 {
-	std::string s = std::accumulate(sl.begin(), sl.end(), std::string(),
-									[](const std::string& a, const std::string& b) -> std::string {
-		return a + (a.length() > 0 ? "," : "") + b;
-	} );
-	return log << s;
-}
-
-void log_case(const string &case_name, const vector<string> &params)
-{
-	cerr << "--------------------------------------------" << endl;
-	cerr << case_name << endl;
-	cerr << "params: ";
-	for(const auto &s : params)
-		cerr << s << ' ';
-	cerr << endl;
-	std::vector<std::string> args = NecroLog::setCLIOptions(params);
-	cerr << "tresholds parsed: " << NecroLog::thresholdsLogInfo() << endl;
-	if(!args.empty()) {
-		cerr << "args not used by necro log: ";
-		for(const auto &s : args)
-			cerr << s << ' ';
-		cerr << endl;
+	istringstream iss(args);
+	vector<string> params{istream_iterator<string>{iss}, istream_iterator<string>{}};
+	NecroLog::setCLIOptions(params);
+	for(const auto &[topic, max_level] : expected_levels) {
+		for(auto level : {NecroLogLevel::Debug, NecroLogLevel::Message, NecroLogLevel::Info, NecroLogLevel::Warning, NecroLogLevel::Error}) {
+			auto will_log = NecroLog::shouldLog(level, NecroLog::LogContext(__FILE__, __LINE__, topic));
+			bool should_log = level <= max_level;
+			auto level_str = string(NecroLog::levelToString(level));
+			auto max_level_str = string(NecroLog::levelToString(max_level));
+			auto logged_level_str = string(NecroLog::levelToString(level));
+			auto topic_str = string(topic);
+			CAPTURE(args);
+			CAPTURE(topic_str);
+			CAPTURE(level_str);
+			CAPTURE(max_level_str);
+			CAPTURE(logged_level_str);
+			REQUIRE(should_log == will_log);
+		}
 	}
-	cerr << "--------------------------------------------" << endl;
-
-	nDebug() << "Debug mesage";
-	nMessage() << "Message mesage";
-	nInfo() << "Info mesage";
-	nWarning() << "Warning mesage";
-	nError() << "Error mesage";
-
-	nCDebug("Foo") << "Debug mesage - topic 'Foo'";
-	nCMessage("Foo") << "Message mesage - topic 'Foo'";
-	nCInfo("Foo") << "Info mesage - topic 'Foo'";
-	nCWarning("Foo") << "Warning mesage - topic 'Foo'";
-	nCError("Foo") << "Error mesage - topic 'Foo'";
-
-	nCDebug("Bar") << "Debug mesage - topic 'Bar'";
-	nCMessage("Bar") << "Message mesage - topic 'Bar'";
-	nCInfo("Bar") << "Info mesage - topic 'Bar'";
-	nCWarning("Bar") << "Warning mesage - topic 'Bar'";
-	nCError("Bar") << "Error mesage - topic 'Bar'";
 }
 
-tuple<string, vector<string>> make_args(const string &params, const string &msg)
+tuple<string, map<const char*, NecroLogLevel>> make_args(const string &args, const map<const char*, NecroLogLevel> &expected_levels)
 {
-	istringstream iss(params);
-	vector<string> tokens{istream_iterator<string>{iss}, istream_iterator<string>{}};
-	return make_tuple(msg, tokens);
+	return make_tuple(args, expected_levels);
 }
 
-int main(int argc, char *argv[])
+DOCTEST_TEST_CASE("CLI thresholds")
 {
-	std::vector<std::string> args = NecroLog::setCLIOptions(argc, argv);
-
-	for(const auto &[msg, v] : {
-		make_args("foo ", "You should see INFO+ for messages without topic set and WARN+ for topic ones"),
-		make_args("foo -v", "You should see all messages"),
-		make_args("foo -v :D", "You should see all messages"),
-		make_args("foo -v :M", "You should see MSG+ for all messages"),
-		make_args("foo -v :I", "You should see INFO+ for all messages"),
-		make_args("foo -v :W", "You should see WARN+ for all messages"),
-		make_args("foo -v :E", "You should see ERR+ for all messages"),
-		make_args("foo -v foo:D", "You should see INFO+ for messages without topic, WARN+ for ones with topic, DEB+ for messages with topic or module name starting with 'foo'"),
-		make_args("foo -v foo,bar:W", "You should see INFO+ for messages without topic, WARN+ for ones with topic, DEB+ for messages with topic or module name starting with 'foo', WARN+ for messages with topic or module name starting with 'bar'"),
-		make_args("foo -v foo,bar:W", "You should see INFO+ for messages without topic set, DEB+ for ones with topic 'foo' or module name 'foo.cpp', WARN+ for ones with topic or module name starting with 'bar'"),
-		make_args("foo -v foo:E", "You should see INFO+ for messages without topic set and DEB+ for ones with topic 'foo' or module name 'foo.cpp'"),
-		make_args("foo -v test_necr:D", "You should see INFO+ for messages without topic, WARN+ for ones with topic, DEB+ for messages with topic or module name starting with 'test_necr'"),
-		make_args("foo -v test_necr:E", "You should see INFO+ for messages without topic, WARN+ for ones with topic, ERR+ for messages with topic or module name starting with 'test_necr'"),
+	for(const auto &[args, expected_levels] : {
+		make_args("myapp ", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v", {{"", NecroLogLevel::Debug}, {"foo", NecroLogLevel::Debug}, {"bar", NecroLogLevel::Debug}}),
+		make_args("myapp -v :D", {{"", NecroLogLevel::Debug}, {"foo", NecroLogLevel::Debug}, {"bar", NecroLogLevel::Debug}}),
+		make_args("myapp -v :M", {{"", NecroLogLevel::Message}, {"foo", NecroLogLevel::Message}, {"bar", NecroLogLevel::Message}}),
+		make_args("myapp -v :I", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Info}, {"bar", NecroLogLevel::Info}}),
+		make_args("myapp -v :W", {{"", NecroLogLevel::Warning}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v :E", {{"", NecroLogLevel::Error}, {"foo", NecroLogLevel::Error}, {"bar", NecroLogLevel::Error}}),
+		make_args("myapp -v foo:D", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Debug}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v foo:M", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Message}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v foo:I", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Info}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v foo:W", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v foo:E", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Error}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v test_necr:D", {{"", NecroLogLevel::Debug}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v test_necr:M", {{"", NecroLogLevel::Message}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v test_necr:I", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v test_necr:W", {{"", NecroLogLevel::Warning}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v test_necr:E", {{"", NecroLogLevel::Error}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp -v foo,bar:W", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Debug}, {"bar", NecroLogLevel::Warning}}),
 	}) {
-		log_case(msg, v);
+		log_case(args, expected_levels);
 	}
-
-	return 0;
 }
