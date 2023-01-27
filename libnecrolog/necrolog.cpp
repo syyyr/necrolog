@@ -171,11 +171,11 @@ std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> 
 	return ret;
 }
 
-void NecroLog::setTopicsLogThresholds(const std::string &tresholds)
+void NecroLog::setTopicsLogThresholds(const std::string &thresholds)
 {
 	std::map<std::string, NecroLog::Level> &treshold_map = NecroLog::globalOptions().topicTresholds;
 	treshold_map.clear();
-	parse_tresholds_string(tresholds, treshold_map);
+	parse_tresholds_string(thresholds, treshold_map);
 }
 
 const char* NecroLog::levelToString(NecroLog::Level level)
