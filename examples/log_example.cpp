@@ -3,10 +3,14 @@
 #include <numeric>
 #include <vector>
 #include <algorithm>
+#include <sstream>
+#include <iterator>
 #include <iostream>
 
 #define nFooInfo() nCInfo("foo")
 #define nBarDebug() nCDebug("bar")
+
+using namespace std;
 
 inline NecroLog &operator<<(NecroLog &log, const std::vector<std::string> &sl)
 {
@@ -25,7 +29,8 @@ int main(int argc, char *argv[])
 		std::cout << NecroLog::cliHelp();
 		exit(0);
 	}
-	nInfo() << NecroLog::tresholdsLogInfo();
+	nInfo() << "args not used by necro log:" << args;
+	nInfo() << "defined lof tresholds:" << NecroLog::thresholdsLogInfo();
 
 	nDebug() << "Debug mesage";
 	nMessage() << "Message mesage";
@@ -33,18 +38,13 @@ int main(int argc, char *argv[])
 	nWarning() << "Warning mesage";
 	nError() << "Error mesage";
 
-	nInfo() << "args not used by necro log:" << args;
+	nInfo().color(NecroLog::Color::Green) << "Info in custom green color";
 
-	nInfo().color(NecroLog::Color::Green) << "Info in custom color";
-
-	nFooInfo() << "Info mesage" << "foo" << "topic";
-	nBarDebug() << "Debug mesage" << "bar" << "topic";
-
-	nCInfo("SomeTopic") << "Topic info";
-	nCInfo("SomeTopic").color(NecroLog::Color::Yellow) << "Topic info in custom color";
+	nFooInfo() << "Topic 'foo' info";
+	nBarDebug() << "Topic 'bar' debug";
 
 	const std::vector<std::string> sl{"foo", "bar", "baz"};
-	nInfo() << "custom type (string list):" << sl;
+	nInfo() << "Logging custom type (string list):" << sl;
 
 	return 0;
 }

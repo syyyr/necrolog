@@ -24,11 +24,11 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 	//std::clog << levelToString(level) << " -> " << context.file() << ':' << context.line() << " topic: " << context.topic() << std::endl;
 	Options &opts = NecroLog::globalOptions();
 
-	const bool topic_set = (context.isTopicSet());
+	const auto topic_set = context.isTopicSet();
 	//if(topic_set)
 	//	std::clog << &opts << " level: " << levelToString(level) << " topic: " << context.topic() << std::endl;
-	if(!topic_set && opts.fileTresholds.empty())
-		return level <= Level::Info; // when tresholds are not set, log non-topic INFO messages
+	//if(!topic_set && opts.fileTresholds.empty())
+	//	return level <= Level::Info; // when tresholds are not set, log non-topic INFO messages
 
 	const char *searched_str = "";
 	if(topic_set) {
@@ -48,7 +48,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 
 #define STARTS_WITH_ONLY
 
-	const std::map<std::string, Level> &thresholds = topic_set? opts.topicTresholds: opts.fileTresholds;
+	const auto &thresholds = opts.topicTresholds;
 	bool threshold_hit = false;
 	for(const auto &kv : thresholds) {
 		const std::string &needle = kv.first;
@@ -79,9 +79,14 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 #endif
 	}
 	// not found in tresholds
-	if(!topic_set && !threshold_hit) {
-		//std::clog << "DEFAULT INFO" << std::endl;
-		return level <= Level::Info; // log non-topic INFO messages
+	//std::clog << "threshold_hit: " << threshold_hit << context.file() << context.line() << std::endl;
+	if(!threshold_hit) {
+		if(topic_set) {
+			return level <= Level::Warning;
+		}
+		else {
+			return level <= Level::Info; // log non-topic INFO messages
+		}
 	}
 	return false;
 }
@@ -96,6 +101,7 @@ NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 static void parse_tresholds_string(const std::string &tresholds, std::map<std::string, NecroLog::Level> &treshold_map)
 {
 	using namespace std;
+	treshold_map.clear();
 	// split on ','
 	size_t pos = 0;
 	while(true) {
@@ -129,34 +135,43 @@ static void parse_tresholds_string(const std::string &tresholds, std::map<std::s
 
 std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 {
+	std::vector<std::string> params;
+	for (int i = 0; i < argc; ++i)
+		params.push_back(argv[i]);
+	return setCLIOptions(params);
+}
+
+std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> &params)
+{
 	using namespace std;
 	std::vector<string> ret;
 	Options& options = NecroLog::globalOptions();
-	for(int i=1; i<argc; i++) {
-		string s = argv[i];
+	options = {};
+	for(size_t i = 1; i < params.size(); i++) {
+		const string s = params[i];
 		if(s == "--lfn" || s == "--log-long-file-names") {
 			i++;
 			options.logLongFileNames = true;
 		}
-		else if(s == "-d" || s == "-v" || s == "--verbose") {
-			bool use_topics = (s != "-d");
+		else if(s == "-v" || s == "--verbose") {
 			i++;
-			string tresholds = (i < argc)? argv[i]: string();
+			string tresholds = (i < params.size())? params[i]: string();
 			if(tresholds.empty() || (!tresholds.empty() && tresholds[0] == '-')) {
 				i--;
 				tresholds = ":D";
 			}
-			parse_tresholds_string(tresholds, use_topics? options.topicTresholds: options.fileTresholds);
+			parse_tresholds_string(tresholds, options.topicTresholds);
 		}
 		else {
 			ret.push_back(s);
 		}
 	}
-	ret.insert(ret.begin(), argv[0]);
+	//if(!params.empty())
+	//	ret.insert(ret.begin(), params[0]);
 	return ret;
 }
 
-void NecroLog::setTopicsLogTresholds(const std::string &tresholds)
+void NecroLog::setTopicsLogThresholds(const std::string &tresholds)
 {
 	std::map<std::string, NecroLog::Level> &treshold_map = NecroLog::globalOptions().topicTresholds;
 	treshold_map.clear();
@@ -211,28 +226,23 @@ static std::string levels_to_string(const std::map<std::string, NecroLog::Level>
 	return ret;
 }
 
-std::string NecroLog::tresholdsLogInfo()
+std::string NecroLog::thresholdsLogInfo()
 {
 	std::string ret;
 	Options &opts = NecroLog::globalOptions();
-	ret += "-d ";
-	if(opts.fileTresholds.empty())
-		ret += ":I";
-	else
-		ret += fileLogTresholds();
 	if(!opts.topicTresholds.empty()) {
 		ret += " -v ";
-		ret += topicsLogTresholds();
+		ret += topicsLogThresholds();
 	}
 	return ret;
 }
 
-std::string NecroLog::topicsLogTresholds()
+std::string NecroLog::topicsLogThresholds()
 {
 	Options &opts = NecroLog::globalOptions();
 	return levels_to_string(opts.topicTresholds);
 }
-
+/*
 std::string NecroLog::fileLogTresholds()
 {
 	std::string ret;
@@ -246,7 +256,7 @@ void NecroLog::setFileLogTresholds(const std::string &tresholds)
 	treshold_map.clear();
 	parse_tresholds_string(tresholds, treshold_map);
 }
-
+*/
 void NecroLog::registerTopic(const std::string &topic, const std::string &info)
 {
 	Options &opts = NecroLog::globalOptions();
@@ -285,18 +295,14 @@ const char * NecroLog::cliHelp()
 	static const char * ret =
 		"--lfn, --log-long-file-names\n"
 		"\tLog long file names\n"
-		"-d [<pattern>]:[D|M|I|W|E] set file name log treshold\n"
-		"-v, --topic [<pattern>]:[D|I|W|E] set topic log treshold\n"
-		"\tSet log treshold\n"
-		"\tset treshold for all files or topics containing pattern to treshold D|I|W|E\n"
-		"\twhen pattern is not set, set treshold for any filename or topic\n"
-		"\twhen treshold is not set, set treshold D (Debug) for all files or topics containing pattern\n"
-		"\twhen nothing is not set, set treshold D (Debug) for all files or topics\n"
-		"\tExamples:\n"
-		"\t\t-d\t\tset treshold D (Debug) for all files or topics\n"
-		"\t\t-d :W\t\tset treshold W (Warning) for all files or topics\n"
-		"\t\t-d foo,bar\t\tset treshold D for all files or topics containing 'foo' or 'bar'\n"
-		"\t\t-d bar:W\tset treshold W (Warning) for all files or topics containing 'bar'\n"
+		"-v, --topic [<pattern>]:[D|I|W|E] set topic or module-name log treshold\n"
+		"\tSet log treshold for all files or topics starting with pattern to treshold D|I|W|E\n"
+		"Examples:\n"
+		"\t\t\tif -v is not specified, set treshold I for all files and W for all topics\n"
+		"\t-v\t\tset treshold D (Debug) for all files and topics\n"
+		"\t-v :W\t\tset treshold W (Warning) for all files or topics\n"
+		"\t-v foo,bar\t\tset treshold D for all files or topics starting with 'foo' or 'bar' and I for rest of files and W for rest of topics\n"
+		"\t-v foo:W\t\tset treshold W for all files or topics starting with 'foo' or 'bar' and I for rest of files and W for rest of topics\n"
 		;
 	return ret;
 }

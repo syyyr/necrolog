@@ -32,7 +32,7 @@ public:
 		void setColor(NecroLog::Color c) {m_color = c;}
 
 		bool isTopicSet() const {return topic()[0];}
-		bool isFileSet() const {return file()[0];}
+		//bool isFileSet() const {return file()[0];}
 	private:
 		const char *m_topic = nullptr;
 		const char *m_file = nullptr;
@@ -67,11 +67,13 @@ public:
 	static std::string moduleFromFileName(const char *file_name);
 
 	static std::vector<std::string> setCLIOptions(int argc, char *argv[]);
-	static std::string tresholdsLogInfo();
-	static std::string topicsLogTresholds();
-	static void setTopicsLogTresholds(const std::string &tresholds);
-	static std::string fileLogTresholds();
-	static void setFileLogTresholds(const std::string &tresholds);
+	static std::vector<std::string> setCLIOptions(const std::vector<std::string> &params);
+	static std::string thresholdsLogInfo();
+	[[deprecated]] static std::string tresholdsLogInfo() {return thresholdsLogInfo();}
+	static std::string topicsLogThresholds();
+	static void setTopicsLogThresholds(const std::string &tresholds);
+	//static std::string fileLogTresholds();
+	//static void setFileLogTresholds(const std::string &tresholds);
 	static void registerTopic(const std::string &topic, const std::string &info);
 	static std::string registeredTopicsInfo();
 	static const char * cliHelp();
@@ -82,7 +84,7 @@ public:
 private:
 	struct Options
 	{
-		std::map<std::string, Level> fileTresholds;
+		//std::map<std::string, Level> fileTresholds;
 		std::map<std::string, Level> topicTresholds;
 		std::map<std::string, std::string> registeredTopics;
 		bool logLongFileNames = false;
