@@ -166,8 +166,8 @@ std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> 
 			ret.push_back(s);
 		}
 	}
-	//if(!params.empty())
-	//	ret.insert(ret.begin(), params[0]);
+	if(!params.empty())
+		ret.insert(ret.begin(), params[0]);
 	return ret;
 }
 
