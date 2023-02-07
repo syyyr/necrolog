@@ -90,6 +90,7 @@ private:
 		std::map<std::string, Level> topicTresholds;
 		std::map<std::string, std::string> registeredTopics;
 		bool logLongFileNames = false;
+		bool caseInsensitiveTopicMatch = false;
 		ColorizedOutputMode colorizedOutput = ColorizedOutputMode::IfTty;
 		MessageHandler messageHandler = defaultMessageHandler;
 	};

@@ -56,8 +56,14 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 #ifdef STARTS_WITH_ONLY
 		size_t i;
 		for (i = 0; i < needle.size() && searched_str[i]; ++i) {
-			if(needle[i] != tolower(searched_str[i]))
-				break;
+			if(opts.caseInsensitiveTopicMatch) {
+				if(tolower(needle[i]) != tolower(searched_str[i]))
+					break;
+			}
+			else {
+				if(needle[i] != searched_str[i])
+					break;
+			}
 		}
 		if(i == needle.size()) {
 			//std::clog << "needle: '" << needle << "' searched str: '" << searched_str << "' i: " << i << std::endl;
@@ -124,7 +130,7 @@ static void parse_tresholds_string(const std::string &tresholds, std::map<std::s
 				default: level = NecroLog::Level::Info; break;
 				}
 			}
-			std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
+			//std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
 			treshold_map[topic] = level;
 		}
 		if(pos2 == string::npos)
@@ -153,7 +159,7 @@ std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> 
 			i++;
 			options.logLongFileNames = true;
 		}
-		else if(s == "-v" || s == "--verbose") {
+		else if(s == "-v" || s == "--vi" || s == "--verbose" || s == "--verbose-insensitive") {
 			i++;
 			string tresholds = (i < params.size())? params[i]: string();
 			if(tresholds.empty() || (!tresholds.empty() && tresholds[0] == '-')) {
@@ -161,6 +167,7 @@ std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> 
 				tresholds = ":D";
 			}
 			parse_tresholds_string(tresholds, options.topicTresholds);
+			options.caseInsensitiveTopicMatch = s == "--vi" || s == "--verbose-insensitive";
 		}
 		else {
 			ret.push_back(s);
@@ -295,7 +302,7 @@ const char * NecroLog::cliHelp()
 	static const char * ret =
 		"--lfn, --log-long-file-names\n"
 		"\tLog long file names\n"
-		"-v, --topic [<pattern>]:[D|I|W|E] set topic or module-name log treshold\n"
+		"-v, --verbose, --vi, --verbode-insensitive [<pattern>]:[D|I|W|E] set topic or module-name log treshold\n"
 		"\tSet log treshold for all files or topics starting with pattern to treshold D|I|W|E\n"
 		"Examples:\n"
 		"\t\t\tif -v is not specified, set treshold I for all files and W for all topics\n"

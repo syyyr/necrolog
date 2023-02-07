@@ -63,6 +63,7 @@ DOCTEST_TEST_CASE("CLI thresholds")
 		make_args("myapp -v test_necr:W", {{"", NecroLogLevel::Warning}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
 		make_args("myapp -v test_necr:E", {{"", NecroLogLevel::Error}, {"foo", NecroLogLevel::Warning}, {"bar", NecroLogLevel::Warning}}),
 		make_args("myapp -v foo,bar:W", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Debug}, {"bar", NecroLogLevel::Warning}}),
+		make_args("myapp --vi Foo:D", {{"", NecroLogLevel::Info}, {"foo", NecroLogLevel::Debug}, {"bar", NecroLogLevel::Warning}}),
 	}) {
 		log_case(args, expected_levels);
 	}
