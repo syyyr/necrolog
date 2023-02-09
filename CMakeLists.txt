@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18.4)
 project(libnecrolog LANGUAGES CXX)
 
 set(WITH_EXAMPLES OFF CACHE BOOL "Enable build of examples")
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries instead of static")
 
 include(CTest)
 
