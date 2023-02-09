@@ -17,7 +17,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU
 	set(CMAKE_CXX_FLAGS "${NECROLOG_WARNING_FLAGS} ${CMAKE_CXX_FLAGS}")
 endif()
 
-add_library(libnecrolog SHARED
+add_library(libnecrolog
 	libnecrolog/necrolog.cpp
 	libnecrolog/necrolog.h
 	libnecrolog/necrologlevel.h
