@@ -4,6 +4,9 @@ project(libnecrolog LANGUAGES CXX)
 set(WITH_EXAMPLES OFF CACHE BOOL "Enable build of examples")
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries instead of static")
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_STANDARD 17 REQUIRED)
+
 include(CTest)
 
 set(CMAKE_SHARED_LIBRARY_PREFIX "") # we don't want CMake to prepend "lib" to our libraries, we prefer adding that ourselves
