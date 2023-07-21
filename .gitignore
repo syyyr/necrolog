@@ -33,3 +33,4 @@
 
 # QTCreator
 *.pro.user
+CMakeLists.txt.user
