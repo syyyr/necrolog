@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
 
 #ifdef __unix
@@ -329,10 +330,7 @@ NecroLog::NecroLogSharedData::~NecroLogSharedData()
 
 int NecroLog::moduleNameStart(const char *file_name)
 {
-	char sep = '/';
-#ifndef __unix
-	//sep = '\\'; mingw use '/' even on windows
-#endif
+	char sep = std::filesystem::path::preferred_separator;
 	int ret = -1;
 	if(file_name) {
 		for (int ix = 0; file_name[ix]; ++ix) {

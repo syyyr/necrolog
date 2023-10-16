@@ -48,9 +48,9 @@ endif()
 
 if(BUILD_TESTING)
 	add_executable(test_necrolog tests/test_necrolog.cpp)
-	add_test(NAME test_necrolog COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_necrolog)
+	add_test(NAME test_necrolog COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:test_necrolog>)
 	target_include_directories(test_necrolog PRIVATE libnecrolog)
-	target_link_libraries(test_necrolog PRIVATE libnecrolog)
+	target_link_libraries(test_necrolog PRIVATE libnecrolog doctest::doctest)
 endif()
 
 install(TARGETS libnecrolog)
