@@ -53,5 +53,8 @@ if(BUILD_TESTING)
 	target_link_libraries(test_necrolog PRIVATE libnecrolog doctest::doctest)
 endif()
 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/necrolog.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" DESTINATION lib/pkgconfig)
+
 install(TARGETS libnecrolog)
 install(DIRECTORY libnecrolog TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
