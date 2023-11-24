@@ -57,4 +57,4 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/necrolog.pc.in" "${CMAKE_CURRENT_BIN
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" DESTINATION lib/pkgconfig)
 
 install(TARGETS libnecrolog)
-install(DIRECTORY libnecrolog TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY libnecrolog/ TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
