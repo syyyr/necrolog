@@ -27,6 +27,7 @@ add_library(libnecrolog
 	libnecrolog/necrolog.h
 	libnecrolog/necrologlevel.h
 )
+add_library(libnecrolog::libnecrolog ALIAS libnecrolog)
 
 target_include_directories(libnecrolog PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libnecrolog>
