@@ -28,8 +28,11 @@ add_library(libnecrolog
 	libnecrolog/necrologlevel.h
 )
 
-target_include_directories(libnecrolog PUBLIC libnecrolog)
-target_include_directories(libnecrolog PUBLIC include)
+target_include_directories(libnecrolog PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libnecrolog>
+	$<INSTALL_INTERFACE:include>
+	)
+
 target_compile_definitions(libnecrolog PRIVATE NECROLOG_BUILD_DLL)
 
 if(WITH_EXAMPLES)
@@ -56,5 +59,8 @@ endif()
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/necrolog.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" DESTINATION lib/pkgconfig)
 
-install(TARGETS libnecrolog)
+install(TARGETS libnecrolog EXPORT necrologConfig)
+export(TARGETS libnecrolog NAMESPACE libnecrolog:: FILE "${CMAKE_CURRENT_BINARY_DIR}/necrologConfig.cmake")
+install(EXPORT necrologConfig DESTINATION "share/necrolog/cmake" NAMESPACE libnecrolog::)
+
 install(DIRECTORY libnecrolog/ TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
