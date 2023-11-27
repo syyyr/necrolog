@@ -27,9 +27,13 @@ add_library(libnecrolog
 	libnecrolog/necrolog.h
 	libnecrolog/necrologlevel.h
 )
+add_library(libnecrolog::libnecrolog ALIAS libnecrolog)
 
-target_include_directories(libnecrolog PUBLIC libnecrolog)
-target_include_directories(libnecrolog PUBLIC include)
+target_include_directories(libnecrolog PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libnecrolog>
+	$<INSTALL_INTERFACE:include>
+	)
+
 target_compile_definitions(libnecrolog PRIVATE NECROLOG_BUILD_DLL)
 
 if(WITH_EXAMPLES)
@@ -53,5 +57,11 @@ if(BUILD_TESTING)
 	target_link_libraries(test_necrolog PRIVATE libnecrolog doctest::doctest)
 endif()
 
-install(TARGETS libnecrolog)
-install(DIRECTORY libnecrolog TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/necrolog.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" DESTINATION lib/pkgconfig)
+
+install(TARGETS libnecrolog EXPORT necrologConfig)
+export(TARGETS libnecrolog NAMESPACE libnecrolog:: FILE "${CMAKE_CURRENT_BINARY_DIR}/necrologConfig.cmake")
+install(EXPORT necrologConfig DESTINATION "share/necrolog/cmake" NAMESPACE libnecrolog::)
+
+install(DIRECTORY libnecrolog/ TYPE INCLUDE FILES_MATCHING PATTERN "*.h")

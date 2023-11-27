@@ -1,0 +1,9 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: @PROJECT_NAME@
+Version: 0.0.1
+Description: Tiny but powerful logging for C++
+Libs: -L${libdir} -lnecrolog
+Cflags: -I${includedir}
