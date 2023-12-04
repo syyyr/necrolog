@@ -57,11 +57,12 @@ if(BUILD_TESTING)
 	target_link_libraries(test_necrolog PRIVATE libnecrolog doctest::doctest)
 endif()
 
+include(GNUInstallDirs)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/necrolog.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" DESTINATION lib/pkgconfig)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/necrolog.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 install(TARGETS libnecrolog EXPORT necrologConfig)
 export(TARGETS libnecrolog NAMESPACE libnecrolog:: FILE "${CMAKE_CURRENT_BINARY_DIR}/necrologConfig.cmake")
-install(EXPORT necrologConfig DESTINATION "share/necrolog/cmake" NAMESPACE libnecrolog::)
+install(EXPORT necrologConfig DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/necrolog/cmake" NAMESPACE libnecrolog::)
 
 install(DIRECTORY libnecrolog/ TYPE INCLUDE FILES_MATCHING PATTERN "*.h")
