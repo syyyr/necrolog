@@ -103,7 +103,8 @@ NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 	return ret;
 }
 
-static void parse_thresholds_string(const std::string &thresholds, std::map<std::string, NecroLog::Level> &threshold_map)
+namespace {
+void parse_thresholds_string(const std::string &thresholds, std::map<std::string, NecroLog::Level> &threshold_map)
 {
 	using namespace std;
 	threshold_map.clear();
@@ -136,6 +137,7 @@ static void parse_thresholds_string(const std::string &thresholds, std::map<std:
 			break;
 		pos = pos2 + 1;
 	}
+}
 }
 
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
@@ -220,7 +222,8 @@ NecroLog::Level NecroLog::stringToLevel(const char *str)
 	return NecroLog::Level::Invalid;
 }
 
-static std::string levels_to_string(const std::map<std::string, NecroLog::Level> &thresholds)
+namespace {
+std::string levels_to_string(const std::map<std::string, NecroLog::Level> &thresholds)
 {
 	std::string ret;
 	for (auto& kv : thresholds) {
@@ -231,6 +234,7 @@ static std::string levels_to_string(const std::map<std::string, NecroLog::Level>
 		ret += level_str[0];
 	}
 	return ret;
+}
 }
 
 std::string NecroLog::thresholdsLogInfo()
