@@ -15,9 +15,9 @@ NecroLog::Options &NecroLog::globalOptions()
 	return global_options;
 }
 
-NecroLog NecroLog::create(Level level, LogContext &&log_context)
+NecroLog NecroLog::create(Level level, const LogContext& log_context)
 {
-	return NecroLog(level, std::move(log_context));
+	return NecroLog(level, log_context);
 }
 
 bool NecroLog::shouldLog(Level level, const LogContext &context)
@@ -318,9 +318,9 @@ const char * NecroLog::cliHelp()
 	return ret;
 }
 
-NecroLog::NecroLogSharedData::NecroLogSharedData(NecroLog::Level level, NecroLog::LogContext &&log_context)
+NecroLog::NecroLogSharedData::NecroLogSharedData(NecroLog::Level level, const NecroLog::LogContext& log_context)
 	: m_level(level)
-	, m_logContext(std::move(log_context))
+	, m_logContext(log_context)
 {
 }
 
