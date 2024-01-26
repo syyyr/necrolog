@@ -31,7 +31,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 	//if(!topic_set && opts.fileThresholds.empty())
 	//	return level <= Level::Info; // when thresholds are not set, log non-topic INFO messages
 
-	const char *searched_str = "";
+	const char *searched_str = nullptr;
 	if(topic_set) {
 		searched_str = context.topic();
 	}
