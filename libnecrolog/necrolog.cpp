@@ -91,9 +91,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 		if(topic_set) {
 			return level <= Level::Warning;
 		}
-		else {
-			return level <= Level::Info; // log non-topic INFO messages
-		}
+		return level <= Level::Info; // log non-topic INFO messages
 	}
 	return false;
 }
