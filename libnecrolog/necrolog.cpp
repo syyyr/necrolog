@@ -140,6 +140,7 @@ static void parse_thresholds_string(const std::string &thresholds, std::map<std:
 	}
 }
 
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 {
 	std::vector<std::string> params;
@@ -423,9 +424,9 @@ void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, Necro
 {
 	std::time_t t = std::time(nullptr);
 	std::tm *tm = std::gmtime(&t); /// gmtime is not thread safe!!!
-	char buffer[80] = {0};
-	std::strftime(buffer, sizeof(buffer),"%Y-%m-%dT%H:%M:%S", tm);
-	set_TTY_color(is_colorized, os, TTYColor::Green) << std::string(buffer);
+	std::array<char, 80> buffer = {0};
+	std::strftime(buffer.data(), buffer.size() * sizeof(*buffer.data()),"%Y-%m-%dT%H:%M:%S", tm);
+	set_TTY_color(is_colorized, os, TTYColor::Green) << std::string(buffer.data());
 	set_TTY_color(is_colorized, os, TTYColor::Brown) << '[' << moduleFromFileName(context.file()) << ':' << context.line() << "]";
 	if(context.isTopicSet()) {
 		set_TTY_color(is_colorized, os, TTYColor::White) << '(' << context.topic() << ")";
