@@ -1,0 +1,24 @@
+name: run-linter
+description: "Run a linter on all changed files"
+inputs:
+  lint_program_with_args:
+    description: "Which program to run"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: ./.github/actions/cmake
+
+    - uses: mjp41/workaround8649@c8550b715ccdc17f89c8d5c28d7a48eeff9c94a8
+      if: runner.os == 'Linux'
+      with:
+        os: ubuntu-latest
+
+    - name: Copy compile_commands.json
+      shell: bash
+      run: cp build/compile_commands.json compile_commands.json
+
+    - name: Run the linter
+      shell: bash
+      run: find -name '*.cpp' | parallel --verbose --jobs "$(nproc)" --plus _=[{#}/{##}] ${{ inputs.lint_program_with_args }} {}
