@@ -145,7 +145,7 @@ std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 {
 	std::vector<std::string> params;
 	for (int i = 0; i < argc; ++i)
-		params.push_back(argv[i]);
+		params.emplace_back(argv[i]);
 	return setCLIOptions(params);
 }
 
