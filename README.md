@@ -23,16 +23,16 @@ You can then fiddle with the test binary:
 -lfn, --log-long-file-names
         Log long file names
 -d, -v, --verbose [<pattern>]:[D|I|W|E]
-        Set files or topics log treshold
-        set treshold for all files or topics containing pattern to treshold D|I|W|E
-        when pattern is not set, set treshold for any filename or topic
-        when treshold is not set, set treshold D (Debug) for all files or topics containing pattern
-        when nothing is not set, set treshold D (Debug) for all files or topics
+        Set files or topics log threshold
+        set threshold for all files or topics containing pattern to threshold D|I|W|E
+        when pattern is not set, set threshold for any filename or topic
+        when threshold is not set, set threshold D (Debug) for all files or topics containing pattern
+        when nothing is not set, set threshold D (Debug) for all files or topics
         Examples:
-                -d              set treshold D (Debug) for all files or topics
-                -d :W           set treshold W (Warning) for all files or topics
-                -d foo,bar              set treshold D for all files or topics containing 'foo' or 'bar'
-                -d bar:W        set treshold W (Warning) for all files or topics containing 'bar'
+                -d              set threshold D (Debug) for all files or topics
+                -d :W           set threshold W (Warning) for all files or topics
+                -d foo,bar              set threshold D for all files or topics containing 'foo' or 'bar'
+                -d bar:W        set threshold W (Warning) for all files or topics containing 'bar'
 ```
 Show all the log output:
 ```sh 

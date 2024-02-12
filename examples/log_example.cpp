@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 	nInfo() << "args not used by necro log:" << args;
-	nInfo() << "defined lof tresholds:" << NecroLog::thresholdsLogInfo();
+	nInfo() << "defined log thresholds:" << NecroLog::thresholdsLogInfo();
 
 	nDebug() << "Debug mesage";
 	nMessage() << "Message mesage";

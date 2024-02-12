@@ -28,8 +28,8 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 	const auto topic_set = context.isTopicSet();
 	//if(topic_set)
 	//	std::clog << &opts << " level: " << levelToString(level) << " topic: " << context.topic() << std::endl;
-	//if(!topic_set && opts.fileTresholds.empty())
-	//	return level <= Level::Info; // when tresholds are not set, log non-topic INFO messages
+	//if(!topic_set && opts.fileThresholds.empty())
+	//	return level <= Level::Info; // when thresholds are not set, log non-topic INFO messages
 
 	const char *searched_str = "";
 	if(topic_set) {
@@ -49,7 +49,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 
 #define STARTS_WITH_ONLY
 
-	const auto &thresholds = opts.topicTresholds;
+	const auto &thresholds = opts.topicThresholds;
 	bool threshold_hit = false;
 	for(const auto &kv : thresholds) {
 		const std::string &needle = kv.first;
@@ -85,7 +85,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 		}
 #endif
 	}
-	// not found in tresholds
+	// not found in thresholds
 	//std::clog << "threshold_hit: " << threshold_hit << context.file() << context.line() << std::endl;
 	if(!threshold_hit) {
 		if(topic_set) {
@@ -105,15 +105,15 @@ NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 	return ret;
 }
 
-static void parse_tresholds_string(const std::string &tresholds, std::map<std::string, NecroLog::Level> &treshold_map)
+static void parse_thresholds_string(const std::string &thresholds, std::map<std::string, NecroLog::Level> &threshold_map)
 {
 	using namespace std;
-	treshold_map.clear();
+	threshold_map.clear();
 	// split on ','
 	size_t pos = 0;
 	while(true) {
-		size_t pos2 = tresholds.find_first_of(',', pos);
-		string topic_level = (pos2 == string::npos)? tresholds.substr(pos): tresholds.substr(pos, pos2 - pos);
+		size_t pos2 = thresholds.find_first_of(',', pos);
+		string topic_level = (pos2 == string::npos)? thresholds.substr(pos): thresholds.substr(pos, pos2 - pos);
 		if(!topic_level.empty()) {
 			auto ix = topic_level.find(':');
 			NecroLog::Level level = NecroLog::Level::Debug;
@@ -132,7 +132,7 @@ static void parse_tresholds_string(const std::string &tresholds, std::map<std::s
 				}
 			}
 			//std::transform(topic.begin(), topic.end(), topic.begin(), ::tolower);
-			treshold_map[topic] = level;
+			threshold_map[topic] = level;
 		}
 		if(pos2 == string::npos)
 			break;
@@ -162,12 +162,12 @@ std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> 
 		}
 		else if(s == "-v" || s == "--vi" || s == "--verbose" || s == "--verbose-insensitive") {
 			i++;
-			string tresholds = (i < params.size())? params[i]: string();
-			if(tresholds.empty() || (!tresholds.empty() && tresholds[0] == '-')) {
+			string thresholds = (i < params.size())? params[i]: string();
+			if(thresholds.empty() || (!thresholds.empty() && thresholds[0] == '-')) {
 				i--;
-				tresholds = ":D";
+				thresholds = ":D";
 			}
-			parse_tresholds_string(tresholds, options.topicTresholds);
+			parse_thresholds_string(thresholds, options.topicThresholds);
 			options.caseInsensitiveTopicMatch = s == "--vi" || s == "--verbose-insensitive";
 		}
 		else {
@@ -181,9 +181,9 @@ std::vector<std::string> NecroLog::setCLIOptions(const std::vector<std::string> 
 
 void NecroLog::setTopicsLogThresholds(const std::string &thresholds)
 {
-	std::map<std::string, NecroLog::Level> &treshold_map = NecroLog::globalOptions().topicTresholds;
-	treshold_map.clear();
-	parse_tresholds_string(thresholds, treshold_map);
+	std::map<std::string, NecroLog::Level> &threshold_map = NecroLog::globalOptions().topicThresholds;
+	threshold_map.clear();
+	parse_thresholds_string(thresholds, threshold_map);
 }
 
 const char* NecroLog::levelToString(NecroLog::Level level)
@@ -221,10 +221,10 @@ NecroLog::Level NecroLog::stringToLevel(const char *str)
 	return NecroLog::Level::Invalid;
 }
 
-static std::string levels_to_string(const std::map<std::string, NecroLog::Level> &tresholds)
+static std::string levels_to_string(const std::map<std::string, NecroLog::Level> &thresholds)
 {
 	std::string ret;
-	for (auto& kv : tresholds) {
+	for (auto& kv : thresholds) {
 		if(!ret.empty())
 			ret += ',';
 		ret += kv.first + ':';
@@ -238,7 +238,7 @@ std::string NecroLog::thresholdsLogInfo()
 {
 	std::string ret;
 	Options &opts = NecroLog::globalOptions();
-	if(!opts.topicTresholds.empty()) {
+	if(!opts.topicThresholds.empty()) {
 		ret += " -v ";
 		ret += topicsLogThresholds();
 	}
@@ -248,21 +248,21 @@ std::string NecroLog::thresholdsLogInfo()
 std::string NecroLog::topicsLogThresholds()
 {
 	Options &opts = NecroLog::globalOptions();
-	return levels_to_string(opts.topicTresholds);
+	return levels_to_string(opts.topicThresholds);
 }
 /*
-std::string NecroLog::fileLogTresholds()
+std::string NecroLog::fileLogThresholds()
 {
 	std::string ret;
 	Options &opts = NecroLog::globalOptions();
-	return levels_to_string(opts.fileTresholds);
+	return levels_to_string(opts.fileThresholds);
 }
 
-void NecroLog::setFileLogTresholds(const std::string &tresholds)
+void NecroLog::setFileLogthresholds(const std::string &thresholds)
 {
-	std::map<std::string, NecroLog::Level> &treshold_map = NecroLog::globalOptions().fileTresholds;
-	treshold_map.clear();
-	parse_tresholds_string(tresholds, treshold_map);
+	std::map<std::string, NecroLog::Level> &threshold_map = NecroLog::globalOptions().fileThresholds;
+	threshold_map.clear();
+	parse_thresholds_string(thresholds, threshold_map);
 }
 */
 void NecroLog::registerTopic(const std::string &topic, const std::string &info)
@@ -303,14 +303,14 @@ const char * NecroLog::cliHelp()
 	static const char * ret =
 		"--lfn, --log-long-file-names\n"
 		"\tLog long file names\n"
-		"-v, --verbose, --vi, --verbode-insensitive [<pattern>]:[D|I|W|E] set topic or module-name log treshold\n"
-		"\tSet log treshold for all files or topics starting with pattern to treshold D|I|W|E\n"
+		"-v, --verbose, --vi, --verbode-insensitive [<pattern>]:[D|I|W|E] set topic or module-name log threshold\n"
+		"\tSet log threshold for all files or topics starting with pattern to threshold D|I|W|E\n"
 		"Examples:\n"
-		"\t\t\tif -v is not specified, set treshold I for all files and W for all topics\n"
-		"\t-v\t\tset treshold D (Debug) for all files and topics\n"
-		"\t-v :W\t\tset treshold W (Warning) for all files or topics\n"
-		"\t-v foo,bar\t\tset treshold D for all files or topics starting with 'foo' or 'bar' and I for rest of files and W for rest of topics\n"
-		"\t-v foo:W\t\tset treshold W for all files or topics starting with 'foo' or 'bar' and I for rest of files and W for rest of topics\n"
+		"\t\t\tif -v is not specified, set threshold I for all files and W for all topics\n"
+		"\t-v\t\tset threshold D (Debug) for all files and topics\n"
+		"\t-v :W\t\tset threshold W (Warning) for all files or topics\n"
+		"\t-v foo,bar\t\tset threshold D for all files or topics starting with 'foo' or 'bar' and I for rest of files and W for rest of topics\n"
+		"\t-v foo:W\t\tset threshold W for all files or topics starting with 'foo' or 'bar' and I for rest of files and W for rest of topics\n"
 		;
 	return ret;
 }
