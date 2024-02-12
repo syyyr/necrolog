@@ -45,10 +45,10 @@ public:
 
 	using MessageHandler = std::function<void (Level level, const LogContext &context, const std::string &msg)>;
 public:
-	NecroLog(Level level, LogContext &&log_context)
+	NecroLog(Level level, const LogContext& log_context)
 	{
 		if(level > Level::Invalid)
-			m_necro = std::make_shared<NecroLogSharedData>(level, std::move(log_context));
+			m_necro = std::make_shared<NecroLogSharedData>(level, log_context);
 	}
 
 	template<typename T>
@@ -57,7 +57,7 @@ public:
 	NecroLog& nospace() {if(m_necro) m_necro->setSpace(false); return *this;}
 	NecroLog& color(NecroLog::Color c) {if(m_necro) m_necro->setColor(c); return *this;}
 
-	static NecroLog create(Level level, LogContext &&log_context);
+	static NecroLog create(Level level, const LogContext &log_context);
 	static bool shouldLog(Level level, const LogContext &context);
 
 	static MessageHandler setMessageHandler(MessageHandler h);
@@ -101,7 +101,7 @@ private:
 	class NECROLOG_DECL_EXPORT NecroLogSharedData {
 		friend class NecroLog;
 	public:
-		NecroLogSharedData(NecroLog::Level level, LogContext &&log_context);
+		NecroLogSharedData(NecroLog::Level level, const LogContext& log_context);
 		~NecroLogSharedData();
 
 		void setSpace(bool b) {m_isSpace = b;}

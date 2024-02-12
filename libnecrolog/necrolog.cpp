@@ -15,9 +15,9 @@ NecroLog::Options &NecroLog::globalOptions()
 	return global_options;
 }
 
-NecroLog NecroLog::create(Level level, LogContext &&log_context)
+NecroLog NecroLog::create(Level level, const LogContext& log_context)
 {
-	return NecroLog(level, std::move(log_context));
+	return NecroLog(level, log_context);
 }
 
 bool NecroLog::shouldLog(Level level, const LogContext &context)
@@ -31,7 +31,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 	//if(!topic_set && opts.fileThresholds.empty())
 	//	return level <= Level::Info; // when thresholds are not set, log non-topic INFO messages
 
-	const char *searched_str = "";
+	const char *searched_str = nullptr;
 	if(topic_set) {
 		searched_str = context.topic();
 	}
@@ -91,9 +91,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 		if(topic_set) {
 			return level <= Level::Warning;
 		}
-		else {
-			return level <= Level::Info; // log non-topic INFO messages
-		}
+		return level <= Level::Info; // log non-topic INFO messages
 	}
 	return false;
 }
@@ -105,7 +103,8 @@ NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 	return ret;
 }
 
-static void parse_thresholds_string(const std::string &thresholds, std::map<std::string, NecroLog::Level> &threshold_map)
+namespace {
+void parse_thresholds_string(const std::string &thresholds, std::map<std::string, NecroLog::Level> &threshold_map)
 {
 	using namespace std;
 	threshold_map.clear();
@@ -139,12 +138,14 @@ static void parse_thresholds_string(const std::string &thresholds, std::map<std:
 		pos = pos2 + 1;
 	}
 }
+}
 
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 std::vector<std::string> NecroLog::setCLIOptions(int argc, char *argv[])
 {
 	std::vector<std::string> params;
 	for (int i = 0; i < argc; ++i)
-		params.push_back(argv[i]);
+		params.emplace_back(argv[i]);
 	return setCLIOptions(params);
 }
 
@@ -221,7 +222,8 @@ NecroLog::Level NecroLog::stringToLevel(const char *str)
 	return NecroLog::Level::Invalid;
 }
 
-static std::string levels_to_string(const std::map<std::string, NecroLog::Level> &thresholds)
+namespace {
+std::string levels_to_string(const std::map<std::string, NecroLog::Level> &thresholds)
 {
 	std::string ret;
 	for (auto& kv : thresholds) {
@@ -232,6 +234,7 @@ static std::string levels_to_string(const std::map<std::string, NecroLog::Level>
 		ret += level_str[0];
 	}
 	return ret;
+}
 }
 
 std::string NecroLog::thresholdsLogInfo()
@@ -315,9 +318,9 @@ const char * NecroLog::cliHelp()
 	return ret;
 }
 
-NecroLog::NecroLogSharedData::NecroLogSharedData(NecroLog::Level level, NecroLog::LogContext &&log_context)
+NecroLog::NecroLogSharedData::NecroLogSharedData(NecroLog::Level level, const NecroLog::LogContext& log_context)
 	: m_level(level)
-	, m_logContext(std::move(log_context))
+	, m_logContext(log_context)
 {
 }
 
@@ -423,9 +426,9 @@ void NecroLog::writeWithDefaultFormat(std::ostream &os, bool is_colorized, Necro
 {
 	std::time_t t = std::time(nullptr);
 	std::tm *tm = std::gmtime(&t); /// gmtime is not thread safe!!!
-	char buffer[80] = {0};
-	std::strftime(buffer, sizeof(buffer),"%Y-%m-%dT%H:%M:%S", tm);
-	set_TTY_color(is_colorized, os, TTYColor::Green) << std::string(buffer);
+	std::array<char, 80> buffer = {0};
+	std::strftime(buffer.data(), buffer.size() * sizeof(*buffer.data()),"%Y-%m-%dT%H:%M:%S", tm);
+	set_TTY_color(is_colorized, os, TTYColor::Green) << std::string(buffer.data());
 	set_TTY_color(is_colorized, os, TTYColor::Brown) << '[' << moduleFromFileName(context.file()) << ':' << context.line() << "]";
 	if(context.isTopicSet()) {
 		set_TTY_color(is_colorized, os, TTYColor::White) << '(' << context.topic() << ")";

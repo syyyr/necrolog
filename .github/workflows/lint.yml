@@ -1,0 +1,41 @@
+# vim: sw=2
+name: Lint
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  clang-tidy:
+    name: clang-tidy / Ubuntu 22.04
+    runs-on: ubuntu-22.04
+    env:
+      CC: clang-15
+      CXX: clang++-15
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run clang-tidy
+        uses: ./.github/actions/run-linter
+        with:
+          lint_program_with_args: clang-tidy-15 --quiet --warnings-as-errors=*
+
+  clazy:
+    name: clazy / Ubuntu 22.04
+    runs-on: ubuntu-22.04
+    env:
+      CC: clang-15
+      CXX: clang++-15
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run clazy
+        uses: ./.github/actions/run-linter
+        with:
+          lint_program_with_args: clazy-standalone --checks=level1,no-fully-qualified-moc-types,no-non-pod-global-static,no-range-loop-detach

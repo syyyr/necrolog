@@ -1,0 +1,45 @@
+name: Setup CMake
+description: "Invoke CMake and generate build files"
+inputs:
+  additional_cmake_args:
+    description: "Additional args to pass to CMake"
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    # Linux deps
+    - name: Install/cache clazy, and doctest
+      if: runner.os != 'Windows'
+      uses: awalsh128/cache-apt-pkgs-action@v1.3.0
+      with:
+        packages: doctest-dev clazy
+        version: 1.0
+
+    # Windows deps
+    - name: Install Windows deps
+      if: runner.os == 'Windows'
+      run: |
+        vcpkg install doctest:x64-mingw-dynamic
+        echo cmake_extra_args="'-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake' '-DMINGW=ON' '-G MinGW Makefiles'" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ${{ github.job }}
+
+    - name: Configure CMake
+      run: |
+        CFLAGS="-Werror ${CFLAGS}" \
+        CXXFLAGS="-Werror ${CXXFLAGS}" \
+        cmake \
+        -S '${{github.workspace}}' \
+        -B '${{github.workspace}}/build' \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        ${{ env.cmake_extra_args }} \
+        ${{ inputs.additional_cmake_args }}
+      shell: bash
