@@ -87,7 +87,7 @@ private:
 	struct Options
 	{
 		//std::map<std::string, Level> fileTresholds;
-		std::map<std::string, Level> topicTresholds;
+		std::map<std::string, Level> topicThresholds;
 		std::map<std::string, std::string> registeredTopics;
 		bool logLongFileNames = false;
 		bool caseInsensitiveTopicMatch = false;
