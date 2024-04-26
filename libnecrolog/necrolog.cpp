@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <iostream>
 
