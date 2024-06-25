@@ -12,6 +12,10 @@
 #include <unistd.h>
 #endif
 
+namespace {
+NecroLog::MessageHandler messageHandler = NecroLog::defaultMessageHandler; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+}
+
 NecroLog::Options &NecroLog::globalOptions()
 {
 	static Options global_options;
@@ -101,7 +105,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 
 NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 {
-	return std::exchange(globalOptions().messageHandler, h);
+	return std::exchange(messageHandler, h);
 }
 
 namespace {
@@ -327,9 +331,8 @@ NecroLog::NecroLogSharedData::NecroLogSharedData(NecroLog::Level level, const Ne
 
 NecroLog::NecroLogSharedData::~NecroLogSharedData()
 {
-	auto h = globalOptions().messageHandler;
-	if(h)
-		h(m_level, m_logContext, m_os.str());
+	if(messageHandler)
+		messageHandler(m_level, m_logContext, m_os.str());
 }
 
 int NecroLog::moduleNameStart(const char *file_name)

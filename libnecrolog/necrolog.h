@@ -92,7 +92,6 @@ private:
 		bool logLongFileNames = false;
 		bool caseInsensitiveTopicMatch = false;
 		ColorizedOutputMode colorizedOutput = ColorizedOutputMode::IfTty;
-		MessageHandler messageHandler = defaultMessageHandler;
 	};
 
 	static Options& globalOptions();
