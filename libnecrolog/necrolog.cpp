@@ -6,6 +6,7 @@
 #include <array>
 #include <filesystem>
 #include <iostream>
+#include <utility>
 
 #ifdef __unix
 #include <unistd.h>
@@ -100,9 +101,7 @@ bool NecroLog::shouldLog(Level level, const LogContext &context)
 
 NecroLog::MessageHandler NecroLog::setMessageHandler(NecroLog::MessageHandler h)
 {
-	MessageHandler ret = globalOptions().messageHandler;
-	globalOptions().messageHandler = h;
-	return ret;
+	return std::exchange(globalOptions().messageHandler, h);
 }
 
 namespace {
